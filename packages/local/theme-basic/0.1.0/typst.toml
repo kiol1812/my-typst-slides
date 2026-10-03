@@ -1,0 +1,17 @@
+[package]
+name = "theme-basic"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["kiol1812 <kioly.vikerg0412@gmail.com>"]
+license = "MIT"
+description = "A basic 16:9 slide theme."
+repository = "https://github.com/kiol1812/my-typst-slides"
+keywords = ["slides", "theme"]
+categories = ["presentation"]
+compiler = "0.13.0"
+
+# 日後若要以「模板」形式發佈到 Universe，再加上：
+# [template]
+# path = "template"
+# entrypoint = "main.typ"
+# thumbnail = "thumbnail.png"

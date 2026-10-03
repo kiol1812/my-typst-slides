@@ -1,0 +1,28 @@
+name: release
+on:
+  push:
+    tags: ["slides/*/v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: "0.13.0"
+      - name: Compile
+        run: |
+          name=$(echo "${GITHUB_REF_NAME}" | cut -d/ -f2)
+          mkdir -p out
+          typst compile \
+            --root . \
+            --package-path packages \
+            --font-path fonts \
+            "slides/$name/main.typ" "out/$name.pdf"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.pdf
