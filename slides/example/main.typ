@@ -1,101 +1,111 @@
 #import "@local/theme-academic:0.1.0": *
 
-#show: deck.with(footer: [有去的論文研究])
+#let title-text = "組件展示範例"
+
+#show: deck.with(footer: title-text)
 
 #let palette = default-palette + (:)
 
 // ───────── 封面 ─────────
 #title-slide(
-  title: [有趣的論文研究],
-  authors: [yang et al.],
-  venue: [pre-print],
-  year: [2025],
-  presenters: ([kiol1812]),
+  title: title-text,
+  authors: [Author A, Author B],
+  venue: [Demo Venue],
+  year: [2026],
+  presenters: ([Presenter]),
   date: [2026/10/03],
 )
 
 // ───────── Outline ─────────
 #outline-slide()
 
-#slide(outlined: true)[Overview][
+#section-slide[Overview]
+
+#slide[Overview][
   #grid(
     columns: (1fr,) * 3, column-gutter: 8pt,
-    stat("1000→50", "圖庫張數 → 精選張數", note: "如從千張挑選 50 張"),
-    stat($O(N^2)$, "欲解決的計算瓶頸", note: "大規模多視角 3D 重建"),
-    stat("16", "週（期中 Week 8）", note: "Week 1–16"),
+    stat("98%", "主要指標", note: "示範用的百分比數字"),
+    stat($O(n log n)$, "時間複雜度", note: "示範用的數學式"),
+    stat("12", "週", note: "Week 1–12"),
   )
   #figure(
-  flow(
-    (
-      ("無序圖庫", "N ≈ 1000 張照片", palette.surface),
-      ("CLIP 特徵", "語意向量快取 .npy/.pt", palette.surface),
-      ("View Graph", "FAISS 近鄰建圖", palette.surface),
-      ("RL Agent + GNN", "序列選出 50 張", palette.surface),
-      ("nerfstudio", "3D 重建 → PSNR/SSIM", palette.surface),
+    flow(
+      (
+        ("原始資料", "範例：10,000 筆紀錄", palette.primary),
+        ("前處理", "清理、標準化、切分", palette.primary),
+        ("特徵擷取", "向量化並快取", palette.primary),
+        ("模型訓練", "調參與驗證", palette.accent),
+        ("評估報告", "指標與視覺化", palette.accent),
+      ),
+      split: 3,
+      zone-a: "前段：資料準備",
+      zone-b: "後段：模型與評估",
     ),
-    split: 4,
-    zone-a: "前端：2D 輕量過濾（訓練期間僅用 Proxy Reward）",
-    zone-b: "後端：3D 黑盒驗證",
-  ),
-  kind: image,
-  caption: [漏斗式架構：2D 前端負責挑選照片，3D 後端僅作為黑盒驗證。],
-)
+    kind: image,
+    caption: [流程圖範例：前段負責資料準備，後段負責模型與評估。],
+  )
 ]
 
-#slide(outlined: true)[Positioning][
-  #callout(title: "核心學術突破", kind: "info")[
-    「用第二組的方法，解第一組的問題」。
+#section-slide[Positioning]
+
+#slide[Positioning][
+  #callout(title: "重點提示", kind: "info")[
+    這是一個 callout 範例，用來強調一句重要的話。
   ]
   #v(2pt)
   #versus(
-    card("第一組", sub: "Candidate View Selection")[
-      離線處理的*集合覆蓋問題 (Set Cover)*。已有一堆冗餘照片，目標是挑出最少數量的照片來包覆整個 3D 物體。
+    card("方法 A", sub: "Baseline Approach")[
+      傳統做法，*實作簡單*、容易重現，但在大規模資料上表現有限。
     ],
-    card("第二組", sub: "Next-Best-View via Information Gain")[
-      引入 *Scan-RL 的馬可夫決策過程 (MDP)*，取代死板的貪婪演算法，讓 Agent 做「尋找最大資訊增益」的連續跳躍決策。
+    card("方法 B", sub: "Advanced Approach")[
+      較新的做法，*效果較好*，代價是需要更多運算資源與調參時間。
     ],
-    card("本專題", sub: "RL on View Graph")[
-      靜態圖庫變成虛擬環境 (View Graph)，Agent 在其中逐步跳躍選圖。
+    card("本範例", sub: "Proposed Approach")[
+      結合兩者優點：保留 A 的簡潔，吸收 B 的關鍵設計。
     ],
   )
 ]
 
-#slide(outlined: true)[MDP][
+#slide[Components][
   #grid(
     columns: (1fr, 1fr), gutter: 8pt,
-    mini("S", "State")[已選節點建構為 Sub-graph，經 GNN 與 Global Pooling 壓成固定維度向量],
-    mini("A", "Action")[從未選圖片中挑下一張（以 Boolean Mask 排除已選，Logits 設為 $-infinity$）],
-    mini("R", "Reward")[2D Proxy Reward：特徵空間擴展程度 + IQA 分數，並含多樣性懲罰],
-    mini("T", "Termination")[選滿 50 張即結束回合；再交由 nerfstudio 黑盒驗證 PSNR],
+    mini("A", "Alpha")[第一個要點的簡短說明，用來測試 mini 元件的排版],
+    mini("B", "Beta")[第二個要點，內容稍長一些，用來觀察文字換行後的對齊情況與留白],
+    mini("C", "Gamma")[第三個要點，包含行內數學 $x^2 + y^2 = r^2$ 的顯示],
+    mini("D", "Delta")[第四個要點，結尾並說明下一步的行動],
   )
 ]
 
-#slide(outlined: true)[Schedule][
+#slide[Schedule][
   #figure(
     gantt((
-      (label: "Phase 1 環境基建", start: 1, end: 4, color: main-palette.dark-40),
-      (label: "Phase 2 期中與環境", start: 7, end: 8, color: main-palette.dark-20),
-      (label: "Phase 3 Reward 升級", start: 9, end: 11, color: main-palette.base),
-      (label: "Phase 4 GNN 與 RL", start: 12, end: 15, color: main-palette.light-20),
-      (label: "Phase 5 展示 Demo", start: 16, end: 16, color: main-palette.light-20),
+      (label: "Phase 1 規劃", start: 1, end: 3, color: main-palette.dark-40),
+      (label: "Phase 2 原型", start: 4, end: 6, color: main-palette.dark-20),
+      (label: "Phase 3 實作", start: 5, end: 9, color: main-palette.base),
+      (label: "Phase 4 測試", start: 9, end: 11, color: main-palette.light-20),
+      (label: "Phase 5 發表", start: 12, end: 12, color: main-palette.light-20),
     )),
     kind: image,
-    caption: [16 週開發時程（以週為單位）。],
+    caption: [甘特圖範例（以週為單位）。],
   )
 ]
 
-#slide(outlined: true)[Problem Statement & Dataset Specification][
+#slide[Lists & Layout][
   #two-col(ratio: (1fr, 1fr))[
-    - Source: Kaggle MNIST Dataset @mnist
-      - #link("https://example.com/t10k-images")[t10k-images-idx3-ubyte]
-      - #link("https://example.com/t10k-labels")[t10k-labels-idx1-ubyte]
-      - #link("https://example.com/train-images")[train-images-idx3-ubyte]
-      - #link("https://example.com/train-labels")[train-labels-idx1-ubyte]
+    - Source: Example Dataset @mnist
+      - #link("https://example.com/file-a")[file-a.csv]
+      - #link("https://example.com/file-b")[file-b.csv]
+      - #link("https://example.com/file-c")[file-c.csv]
     - Size
-      - Train: 60000
-      - Test: 10000
+      - Train: 8000
+      - Test: 2000
   ][
     #align(center)[
+      #rect(
+        width: 100%, height: 110pt,
+        fill: palette.surface, stroke: 1pt + palette.primary, radius: 4pt,
+        align(center + horizon, text(fill: palette.primary)[圖片／圖表佔位]),
+      )
     ]
   ]
 ]
