@@ -1,0 +1,11 @@
+[package]
+name = "theme-academic"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["kiol1812 <kioly.vikerg0412@gmail.com>"]
+license = "MIT"
+description = "A academic 16:9 slide theme."
+repository = "https://github.com/kiol1812/my-typst-slides"
+keywords = ["slides", "theme"]
+categories = ["presentation"]
+compiler = "0.13.0"
