@@ -26,6 +26,29 @@
 #let serif-font = ("Times New Roman", "Tinos", "Liberation Serif", "Noto Serif CJK TC", "Noto Serif TC", "PMingLiU")
 #let sans-font  = ("Tw Cen MT", "Noto Sans CJK TC", "Noto Sans TC", "Microsoft JhengHei")
 
+// 元件共用設定：元件可用 palette / sizes 參數覆寫單次使用的值。
+#let academic-palette = (
+  primary: main-color,
+  accent: coral,
+  surface: link-color,
+  text: navy,
+  muted: gray-text,
+  positive: main-palette.light-20,
+  caution: main-palette.dark-20,
+  highlight: main-palette.light-40,
+)
+#let academic-sizes = kit.default-sizes + (
+  body: 20pt,
+  title: 24pt,
+  subtitle: 20pt,
+  label: 16pt,
+  small: 14pt,
+  badge: 16pt,
+  icon: 8pt,
+  stat-value: 20pt,
+  flow-number: 20pt,
+)
+
 // 用來記錄目前清單的巢狀層數（控制 28pt / 24pt / 20pt 字級）
 #let _list-depth = state("dlcv-list-depth", 0)
 
@@ -274,16 +297,42 @@
   left, right,
 )
 
-#let callout = kit.callout.with(palette: (
-  info: main-palette.light-40,
-  warn: main-palette.dark-20,
-  tip: main-palette.light-20,
-))
-#let tag = kit.tag
-#let card = kit.card
-#let gantt = kit.gantt
-#let stat = kit.stat
-#let flow = kit.flow
-#let mini = kit.mini
-#let versus = kit.versus
-#let default-palette = kit.default-palette
+#let callout(title: none, kind: "info", palette: (:), sizes: academic-sizes, body) = kit.callout(
+  title: title, kind: kind, palette: academic-palette + palette, sizes: sizes, body,
+)
+#let tag(body, color: auto, palette: (:), sizes: academic-sizes) = kit.tag(
+  body, color: color, palette: academic-palette + palette, sizes: sizes,
+)
+#let card(head, sub: none, color: auto, height: auto, palette: (:), sizes: academic-sizes, body) = kit.card(
+  head, sub: sub, color: color, height: height,
+  palette: academic-palette + palette, sizes: sizes, body,
+)
+#let gantt(rows, total: 16, mid: 8, palette: (:), sizes: academic-sizes) = kit.gantt(
+  rows, total: total, mid: mid, palette: academic-palette + palette, sizes: sizes,
+)
+#let stat(value, label, color: auto, note: none, height: auto, palette: (:), sizes: academic-sizes) = kit.stat(
+  value, label, color: color, note: note, height: height,
+  palette: academic-palette + palette, sizes: sizes,
+)
+#let flow(
+  stages,
+  split: 4,
+  zone-a: "",
+  zone-b: "",
+  color-a: auto,
+  color-b: auto,
+  height: 120pt,
+  palette: (:),
+  sizes: academic-sizes,
+) = kit.flow(
+  stages, split: split, zone-a: zone-a, zone-b: zone-b,
+  color-a: color-a, color-b: color-b, height: height,
+  palette: academic-palette + palette, sizes: sizes,
+)
+#let mini(letter, name, color: auto, palette: (:), sizes: academic-sizes, body) = kit.mini(
+  letter, name, color: color, palette: academic-palette + palette, sizes: sizes, body,
+)
+#let versus(left, right, result, palette: (:), sizes: academic-sizes) = kit.versus(
+  left, right, result, palette: academic-palette + palette, sizes: sizes,
+)
+#let default-palette = academic-palette

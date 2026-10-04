@@ -1,13 +1,17 @@
 /// 大數字卡片
-#import "palette.typ": default-palette
+#import "style.typ": default-palette, default-sizes
 
-#let stat(value, label, color: default-palette.surface, note: none, height: auto) = block(
-  width: 100%, height: height, fill: color.lighten(92%), stroke: 0.6pt + color.lighten(60%),
+#let stat(value, label, color: auto, note: none, height: auto, palette: (:), sizes: default-sizes) = {
+  let p = default-palette + palette
+  let c = if color == auto { p.surface } else { color }
+  block(
+  width: 100%, height: height, fill: c.lighten(92%), stroke: 0.6pt + c.lighten(60%),
   radius: 6pt, inset: 10pt,
 )[
   #align(center)[
-    #text(20pt, weight: "bold", fill: color)[#value] \
-    #text(16pt, fill: default-palette.text)[#label]
-    #if note != none [ \ #text(16pt, fill: default-palette.tip)[#note]]
+    #text(sizes.stat-value, weight: "bold", fill: c)[#value] \
+    #text(sizes.label, fill: p.text)[#label]
+    #if note != none [ \ #text(sizes.label, fill: p.positive)[#note]]
   ]
 ]
+}

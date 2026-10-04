@@ -3,6 +3,6 @@
 #import "src/card.typ": card
 #import "src/gantt.typ": gantt
 #import "src/mixed.typ": *
-#import "src/palette.typ": default-palette
+#import "src/style.typ": default-palette, default-sizes
 #import "src/stat.typ": stat
 #import "src/tag.typ": tag
