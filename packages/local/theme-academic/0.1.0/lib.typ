@@ -61,9 +61,9 @@
     column-gutter: 10pt,
     align: horizon,
     line(length: 18pt, stroke: rule),
-    text(font: sans-font, size: 12pt, fill: navy)[#label],
+    text(font: sans-font, size: 16pt, fill: navy)[#label],
     line(length: 100%, stroke: rule),
-    text(font: sans-font, size: 10pt, fill: gray-text)[#n],
+    text(font: sans-font, size: 16pt, fill: gray-text)[#n],
     line(length: 18pt, stroke: rule),
   )))
 }
@@ -247,30 +247,41 @@
   date: [],         // 報告日期
 ) = page(background: none)[
   #counter(page).update(0)
-
   #let presenter-list = if type(presenters) == array { presenters } else { (presenters,) }
   
-    #align(center + horizon)[
-    #block(width: 100%)[
-      #set par(leading: 0.4em)
+  #set par(leading: 0.4em)
 
-      // 論文標題
+  // 使用 grid 分為上、中、下三區塊
+  #grid(
+    columns: 1fr,
+    rows: (0.9fr, auto, 1.1fr),
+    align: center,
+    
+    // --- 1. 上半部：標題區（靠底對齊，往上延伸） ---
+    align(bottom)[
       #text(size: 48pt, weight: "bold", fill: navy)[#title]
       #if subtitle != none [
         #v(10pt)
         #text(size: 28pt, fill: navy)[#subtitle]
       ]
-
-      #v(24pt)
+      #v(60pt) // 調整標題與分隔線的相對距離
+    ],
+    
+    // --- 2. 中間部：分隔線 ---
+    align(center + horizon)[
       #line(length: 40%, stroke: 2pt + navy)
-      #v(24pt)
-
+    ],
+    
+    // --- 3. 下半部：資訊區（靠頂對齊，往下延伸） ---
+    align(top)[
+      #v(20pt) // 調整資訊區與分隔線的相對距離
+      
       // 論文資訊
       #text(size: 24pt)[#authors]
       #v(8pt)
       #text(size: 22pt, fill: gray-text)[#venue, #year]
 
-      #v(36pt)
+      #v(24pt)
 
       // 報告資訊
       #grid(
@@ -287,7 +298,7 @@
       #linebreak()
       #text(size: 20pt, fill: gray-text)[#date]
     ]
-  ]
+  )
 ]
 
 // 左右雙欄：#two-col(ratio: (1fr, 1fr))[左][右]
