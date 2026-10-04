@@ -1,0 +1,11 @@
+[package]
+name = "slide-kit"
+version = "0.1.1"
+entrypoint = "lib.typ"
+authors = ["kiol1812 <kioly.vikerg0412@gmail.com>"]
+license = "MIT"
+description = "Reusable components shared across my slide themes."
+repository = "https://github.com/kiol1812/my-typst-slides"
+keywords = ["slides", "components"]
+categories = ["presentation"]
+compiler = "0.13.0"
