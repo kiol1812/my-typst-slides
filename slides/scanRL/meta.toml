@@ -1,0 +1,6 @@
+title    = "Next-Best View Policy for 3D Reconstruction"
+date     = 2026-10-04
+tags     = ["paper", "cv"]
+template = "theme-academic"
+status   = "published"
+summary  = "This paper addresses the view planning problem by learning a policy to select the Next-Best View (NBV)."
