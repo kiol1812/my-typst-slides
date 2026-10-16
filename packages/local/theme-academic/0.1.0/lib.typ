@@ -347,3 +347,8 @@
   left, right, result, palette: academic-palette + palette, sizes: sizes,
 )
 #let default-palette = academic-palette
+#let timeline(items: (), palette: (:), sizes: academic-sizes) = kit.timeline(
+  items: items, 
+  palette: academic-palette + palette, 
+  sizes: sizes
+)
