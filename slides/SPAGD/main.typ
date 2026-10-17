@@ -1,6 +1,14 @@
 #import "@local/theme-academic:0.1.0": *
 #import "@preview/cetz:0.5.2"
 
+#import "assets/static-correlation.typ": static-correlation
+#import "assets/anomaly-reconstruction.typ": anomaly-reconstruction
+#import "assets/self-perturbation.typ": self-perturbation
+#import "assets/aagc.typ": aagc
+#import "assets/st-detector.typ": st-detector
+#import "assets/main-results.typ": main-results
+#import "assets/ablation.typ": ablation
+
 #let title-text = "Self-Perturbed Anomaly-Aware Graph Dynamics for Multivariate Time-Series Anomaly Detection"
 
 #show: deck.with(footer: title-text)
@@ -27,8 +35,7 @@
 
 #section-slide[Introduction]
 
-#slide[Problem Defination][
-  #import "@preview/cetz-plot:0.1.4": plot
+#slide[Problem Definition][
   #show table.cell: set text(size: 20pt)
   - Time-series anomaly detection (TSAD)
     #table(
@@ -38,41 +45,19 @@
       [Static spatio-temporal correlation modeling], [anomaly-aware graph construction module],
       [The "anomaly reconstruction" problem \ (overlooking anomalies with low reconstruction error, because the overfit towards normal patterns)], [spatio-temporal anomaly detection module]
     )
-  #align(center)[
-    #cetz.canvas({
-      plot.plot(
-        size: (20, 5),
-        x-tick-step: 2,
-        y-tick-step: 2,
-        x-label: none,
-        y-label: none,
-        {
-          plot.add(
-            domain: (0, 20),
-            samples: 500,
-            style: (stroke: blue + 1.5pt),
-            x => 0.5 * calc.sin(2 * x * 1rad) + 
-                 0.3 * calc.cos(5.5 * x * 1rad) + 
-                 8 * calc.exp(-4 * calc.pow(x - 12, 2))
-          )
-          plot.add(
-            domain: (0, 20),
-            samples: 500,
-            style: (stroke: red + 1.5pt),
-            x => 0.5 * calc.sin(1.95 * x * 1rad) + 
-                 0.3 * calc.cos(5.5 * x * 1rad) + 
-                 7 * calc.exp(-6 * calc.pow(x - 12, 2))
-          )
-        }
-      )
-    })
-  ]
+  #v(8pt)
+  #grid(
+    columns: (1fr, 1fr),
+    align: center,
+    static-correlation(),
+    anomaly-reconstruction(),
+  )
 ]
 
 #slide[Related Works][
-  #two-col(ratio: (1.5fr, 1fr))[
+  #two-col(ratio: (1.7fr, 1fr))[
     - Sequence-centric models
-      - good at capture long-term dependencies
+      - good at capturing long-term dependencies
       - overlooking inter-variable correlations
     - Graph-based models
       - Fixed structures fail when relationships change over time
@@ -80,6 +65,8 @@
       - Rely on strict assumptions
       - Struggle with large or high-dimensional data
     - Reconstruction-based methods
+      - Flag samples with large reconstruction errors
+      - Overfit $->$ anomalies reconstructed well, missed
   ][
     #timeline(
       items: (
@@ -124,9 +111,29 @@
       F_Theta: RR^(d times T) -> hat(y), quad hat(y) in {0, 1} quad forall hat(bold(X))_i in cal(D)_("test")
     $
   - *Proposed Framework:* #underline[#strong[S]]elf-#underline[#strong[P]]erturbed #underline[#strong[A]]nomaly-aware #underline[#strong[G]]raph #underline[#strong[D]]ynamics
-    - *self-perturbed time-series generation* to alleviates data imbalance
-    - *graph construction* to models dynamical inter-variable correlations
-    - a *spatio-temporal anomaly detection module* to mitigates \ the anomaly reconstruction problems
+    - *self-perturbed time-series generation* to alleviate data imbalance
+    - *graph construction* to model dynamical inter-variable correlations
+    - a *spatio-temporal anomaly detection module* to mitigate \ the anomaly reconstruction problems
+]
+
+#slide[Key Idea][
+  #two-col[
+    #card([Reconstruction-based], color: palette.muted)[
+      - Reconstruct normal data
+      - Score = recon. error
+      - Well-fit anomalies *missed*
+    ]
+  ][
+    #card([SPAGD], color: palette.accent)[
+      - Errors $->$ *pseudo-anomalies*
+      - *Classifier*: normal vs. perturbed
+      - Graph *adapts* to candidates
+    ]
+  ]
+  #v(12pt)
+  #callout(title: [Core idea])[
+    Turn the reconstructor's imperfection into supervision.
+  ]
 ]
 
 #slide[Self-Perturbed Anomaly-Aware Graph Dynamics][
@@ -136,34 +143,137 @@
   )
 ]
 
-#slide[Time-Series Generation via Self-Perturbed][
-  Self-perturbation mechanism harnesses the intrinsic imperfections of reconstruction models to generate pseudo-anomalous samples
-
-
-  The reconstruction model is trained on $cal(D) = {bold(X)_i}^N_(i=1)$ by minimizing:
-  $
-    cal(L)_"sp" = sum^N_(i=1) || bold(X)_i - "Tran"_d ("Tran"_e (bold(X_i); Theta_e); Theta_d) ||^2_F
-  $
-
-  Where Frobenius Norm $||A||^2_F = sum^m_i sum^n_j |a_(i j)|^2 = "Tr"(A^T A)$
+#slide(subtitle: [Problem 1: data imbalance])[Self-Perturbation][
+  - Transformer AE on normal data; output $tilde(bold(X))$ labeled as anomaly
+  - Deviations shrink during training: *obvious $->$ subtle*
+  #align(center, grid(
+    columns: 2,
+    column-gutter: 24pt,
+    align: horizon,
+    $display(cal(L)_"sp" = sum^N_(i=1) || bold(X)_i - "Tran"_d ("Tran"_e (bold(X)_i; Theta_e); Theta_d) ||^2_F)$,
+    text(size: 16pt, fill: gray-text)[Frobenius norm: \ $||A||^2_F = sum_i sum_j |a_(i j)|^2 = "Tr"(A^T A)$],
+  ))
+  #align(center, self-perturbation())
 ]
 
-#slide[Anomaly-Aware Graph Construction, AAGC][
-  - dynamically adjust the graph structure based on the reconstruction residuals of the self-perturbed time series
-  - ensuring that the influence of potential anomalies on the spatial relationships can be emphasized
+#slide(subtitle: [Problem 2: static correlations])[Anomaly-Aware Graph Construction][
+  #align(center, aagc())
+  #set text(size: 22pt)
+  - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$; top-$m%$ $->$ candidates $cal(M)$
+  - Boost edges touching $cal(M)$, then keep top-$K$:
+  $
+    tilde(S)_(i j) = S_(i j) + bb(1)(i in cal(M)) phi(r_i) + bb(1)(j in cal(M)) phi(r_j)
+  $
 ]
 
-#slide[Spatio-Temporal Modeling for TSAD][
+#slide(subtitle: [Problem 3: anomaly reconstruction])[Spatio-Temporal Anomaly Detector][
+  #align(center, st-detector())
+  #v(8pt)
+  - *Spatial*: GAT on $bold(A)$ (normal) and $tilde(bold(A))$ (perturbed)
+  - *Temporal*: split $T$ into $C$ chunks $->$ TCN $->$ concat
+  - *Classifier*, not reconstruction error $->$ no hand-crafted score
+]
+
+#slide[Training & Inference][
+  #two-col(ratio: (1.3fr, 1fr))[
+    #card([Each training step])[
+      #set text(size: 24pt)
+      #set enum(spacing: 14pt)
+      + $tilde(bold(X)) <- "Tran"_d ("Tran"_e (bold(X)))$
+      + $bold(A) <- "top-"K(S)$, #h(4pt) $tilde(bold(A)) <- "top-"K(tilde(S))$
+      + $hat(p) <- cal(P)([bold(Z)_T; tilde(bold(Z))_T])$, labels $0$ / $1$
+      + Update all modules with $cal(L)$
+    ]
+  ][
+    #v(16pt)
+    $ cal(L) = cal(L)_"sp" + beta cal(L)_"ad" $
+    #v(8pt)
+    - $cal(L)_"ad"$: binary cross-entropy
+    - *End-to-end*, no pre-training
+    - Inference: $hat(p)$ = anomaly score
+  ]
+]
+
+#section-slide[Experiments]
+
+#slide[Setup][
+  #show table.cell: set text(size: 20pt)
+  #align(center, table(
+    columns: 4,
+    align: (left, left, center, center),
+    [*Dataset*], [*Domain*], [*Channels*], [*Anomaly ratio*],
+    [SWaT], [Water treatment], [51], [11.98%],
+    [SMAP], [Spacecraft telemetry], [25], [13.13%],
+    [MSL], [Spacecraft telemetry], [55], [10.72%],
+  ))
+  - Train on normal data only; 16 baselines
+  - AUC, AUPRC, F1 *without* point adjustment
+  - Stable for window size 80--100 and $beta approx 10^(-2)$
+]
+
+#slide[Main Results][
+  #figure(
+    main-results(),
+    caption: [AUC (Source: Table 2 of @cai2025)],
+  )
+  - Best AUC on all three datasets
+  - Avg. of 9 metrics: *52.11* vs. 46.79 (runner-up, Deep IF)
+  - F1 not best on SMAP / MSL
+]
+
+#slide[Ablation Study][
+  #two-col(ratio: (1.2fr, 1fr))[
+    #figure(
+      ablation(),
+      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of @cai2025)],
+    )
+  ][
+    #v(20pt)
+    - Every module helps
+    - No joint training: $-11.6$
+    - Recon. score: $-11.5$
+    - Static graph: $-6.3$ to $-6.8$
+  ]
+]
+
+#slide[Anomaly Score Visualization][
+  #figure(
+    image("assets/fig-3.png", width: 100%),
+    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: @cai2025)],
+  )
+  #v(8pt)
+  - TranAD: low scores *inside* the anomaly $->$ anomaly reconstruction
+  - SPAGD: score shift aligns with the ground truth
 ]
 
 #section-slide[Conclusion]
 
 #slide[Paper Summary][
-  - authors introduced SPAGD, a new TSAD framework to address serval inherent challenges of Multivariate time-series anomaly detection
-  - self-perturbation module: mitigating the class imbalance as well as providing rich auxiliary protential anomalous signals for training
-  - anomaly-aware graph construction: dynamically adjust inter-variable correlations for evolving self-perturbed time series
-  - anomaly detector: distinguish the normal time series from the self-perturbed ones by modeling noth spatial and temporal dependencies
-  - SPAGD presumes a relatively homogeneous sensing landscape, which may not be applicable under highly heterogeneous sreams with asynchoronous sensors or weak inter-variable dependencies
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    column-gutter: 12pt,
+    mini("1", [Self-Perturbation])[Pseudo-anomalies from reconstruction errors],
+    mini("2", [AAGC])[Residual-guided dynamic graph],
+    mini("3", [ST Classifier])[Avoids anomaly reconstruction],
+  )
+  #v(12pt)
+  - Best AUC on SWaT, SMAP, MSL; each module verified by ablation
+  #v(8pt)
+  #callout(title: [Limitation], kind: "warn")[
+    Assumes homogeneous, synchronous sensors with strong inter-variable dependency.
+  ]
+]
+
+#slide[Why This Paper][
+  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
+]
+
+#slide[My Takeaways][
+  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
+]
+
+#slide[Overlap with My Research][
+  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
 ]
 
 #slide()[References][
