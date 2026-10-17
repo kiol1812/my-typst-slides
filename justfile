@@ -25,3 +25,13 @@ new name:
 
 fill name key="":
     python3 scripts/fill_slide_meta.py "slides/{{name}}" "{{key}}"
+
+fig slide name:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p out
+    theme=$(grep -m1 -o '@local/theme-[a-z-]*:[0-9.]*' "slides/{{slide}}/main.typ")
+    printf '#import "%s": *\n#import "/slides/{{slide}}/assets/{{name}}.typ": %s\n#show: deck.with(footer: "{{slide}} / {{name}}")\n#slide[{{name}}][#align(center, %s())]\n' \
+      "$theme" "{{name}}" "{{name}}" \
+      | typst compile --root . --package-path packages --font-path fonts \
+          --diagnostic-format short - "out/{{slide}}--{{name}}.pdf"

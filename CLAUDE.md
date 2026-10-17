@@ -15,6 +15,7 @@ just build <slide>          # 編譯 slides/<slide>/main.typ -> out/<slide>.pdf
 just watch <slide>          # 即時預覽（會濾掉含 "font" 的警告行）
 just new <slide>            # 從 templates/slide/ 建立新 slide（main.typ / meta.toml / refs.bib）
 just fill <slide> [bib-key] # 從 refs.bib 填入 main.typ 的標題、作者、venue、年份與 meta.toml 的 title
+just fig <slide> <name>     # 單獨預覽 slides/<slide>/assets/<name>.typ 的 <name>() -> out/<slide>--<name>.pdf
 python3 scripts/build-index.py [--include-draft]   # 由各 meta.toml 產生 docs/index.md 與 docs/index.json
 typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書有被載入
 ```
@@ -39,6 +40,16 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 ### 模板與腳本的耦合
 
 `scripts/fill_slide_meta.py` 以正規表示式改寫 `main.typ`，依賴 `templates/slide/main.typ` 中的固定格式：`#let title-text = "..."` 單行，以及 `title-slide(...)` 內 `authors: [...]`、`venue: [...]`、`year: [...]` 各自一行。修改模板時要維持這些行的格式，否則 `just fill` 會失效。
+
+## 圖形
+
+在 slide 中畫任何圖（cetz、cetz-plot、fletcher 或主題元件組合）之前，先讀 `guides/figures.md` 並遵守，即使沒有使用 `slide-figure` skill。重點：
+
+- 版本固定為 `@preview/cetz:0.5.2`、`@preview/cetz-plot:0.1.4`、`@preview/fletcher:0.5.8`。`docs/refs/` 有這些套件的原始碼與文件，是語法的依據；其中 cetz 0.5.3 尚未上架 Universe，它新增的功能不能用。
+- 能用主題元件（`flow`、`timeline`、`card` 等）就不要重畫。
+- 圖畫在 `slides/<id>/assets/<name>.typ` 的同名函式中，`main.typ` 只能具名 import（不可 `*`），圖檔不能動到主文件的設定。
+- 顏色與字級取自主題的 `default-palette` / `academic-sizes`，不寫死顏色、不設定字型。
+- 完成後 `just fig` 與 `just build` 都要成功。
 
 ## 注意事項
 
