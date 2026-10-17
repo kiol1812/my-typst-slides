@@ -22,7 +22,7 @@
     node((2, 0), [Chunk-wise \ TCN], name: <tcn>, ..module),
     node((2, 1), [Chunk-wise \ TCN], name: <tcnt>, ..module),
 
-    node((3, 0.5), [Stack \ $[bold(Z)_T; tilde(bold(Z))_T]$], name: <stack>),
+    node((3, 0.5), [Stack \ $[cal(Z)_T; tilde(cal(Z))_T]$], name: <stack>),
     node((4, 0.5), [Predictor \ $cal(P)$], name: <pred>),
     node((5, 0.5), [$hat(p)$], name: <out>, shape: fletcher.shapes.circle),
 

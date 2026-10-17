@@ -42,9 +42,9 @@
     #table(
       columns: 2,
       [*Problem*], [*Solution*],
-      [The severe data imbalance], [self-perturbation module],
+      [Severe data imbalance], [self-perturbation module],
       [Static spatio-temporal correlation modeling], [anomaly-aware graph construction module],
-      [The "anomaly reconstruction" problem \ (overlooking anomalies with low reconstruction error, because the overfit towards normal patterns)], [spatio-temporal anomaly detection module]
+      [The "anomaly reconstruction" problem \ (anomalies with low reconstruction error are overlooked due to overfitting to normal patterns)], [spatio-temporal anomaly detection module]
     )
   #v(8pt)
   #grid(
@@ -58,11 +58,11 @@
 #slide[Related Works][
   #two-col(ratio: (1.7fr, 1fr))[
     - Sequence-centric models
-      - good at capturing long-term dependencies
-      - overlooking inter-variable correlations
+      - Good at capturing long-term dependencies
+      - Overlook inter-variable correlations
     - Graph-based models
       - Fixed structures fail when relationships change over time
-    - Both of above method
+    - Traditional methods
       - Rely on strict assumptions
       - Struggle with large or high-dimensional data
     - Reconstruction-based methods
@@ -113,8 +113,8 @@
     $
   - *Proposed Framework:* #underline[#strong[S]]elf-#underline[#strong[P]]erturbed #underline[#strong[A]]nomaly-aware #underline[#strong[G]]raph #underline[#strong[D]]ynamics
     - *self-perturbed time-series generation* to alleviate data imbalance
-    - *graph construction* to model dynamical inter-variable correlations
-    - a *spatio-temporal anomaly detection module* to mitigate \ the anomaly reconstruction problems
+    - *graph construction* to model dynamic inter-variable correlations
+    - a *spatio-temporal anomaly detection module* to mitigate \ the anomaly reconstruction problem
 ]
 
 #slide[Key Idea][
@@ -169,10 +169,10 @@
   #align(center, aagc())
   #set text(size: 22pt)
   - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$
-  - top-$m%$ $->$ candidates $cal(M)$
+  - Top-$m%$ $->$ candidates $cal(M)$
   - Boost edges touching $cal(M)$, then keep top-$K$:
   $
-    tilde(S)_(i j) = S_(i j) + bb(I)(i in cal(M)) phi(r_i) + bb(I)(j in cal(M)) phi(r_j)
+    tilde(S)_(i j) = S_(i j) + bb(I)(i in cal(M)) phi(r_i) + bb(I)(j in cal(M)) phi(r_j), quad phi := "Sigmoid"
   $
 ]
 
@@ -180,10 +180,10 @@
   #align(center, st-detector())
   #v(8pt)
   - *Spatial*: Graph Attention Network (GAT) on $bold(A)$ (normal) and $tilde(bold(A))$ (perturbed)
-  - *Temporal*: split $T$ into $C$ chunks $->$ Temporal Convolution Network (TCN)
+  - *Temporal*: $C$ time chunks $->$ Temporal Convolutional Network (TCN)
   - *Classifier*: $hat(p) = cal(P)(cal(Z)_"stack"; Theta_cal(P)), quad hat(p) in [0, 1]^(2N)$
     $
-      quad quad cal(L)_"ad" = -1/(2N) sum^(2N)_(i=1) [y_i log(hat(p)_i) + (1-y_i)log(1-hat(p)_i)]
+      quad quad cal(L)_"ad" = -1/(2N) sum^(2N)_(i=1) [y_i log(hat(p)_i) + (1-y_i)log(1-hat(p)_i)]; quad cal(L) = cal(L)_"sp" + beta cal(L)_"ad"
     $
 ]
 
@@ -191,34 +191,34 @@
 
 #slide[Setup][
   #show table.cell: set text(size: 20pt)
-  #align(center, table(
-    columns: 4,
-    align: (left, left, center, center),
-    [*Dataset*], [*Domain*], [*Channels*], [*Anomaly ratio*],
-    [SWaT], [Water treatment], [51], [11.98%],
-    [SMAP], [Spacecraft telemetry], [25], [13.13%],
-    [MSL], [Spacecraft telemetry], [55], [10.72%],
-  ))
-  - Train on normal data only; 16 baselines
-  - AUC, AUPRC, F1 *without* point adjustment
-  - Stable for window size 80--100 and $beta approx 10^(-2)$
+  #set figure(supplement: "Table")
+  #figure(
+    kind: table,
+    table(
+      columns: (1fr, auto, auto, auto, auto, auto),
+      align: (left, center, center, center, center, center),
+      [*Dataset*], [*Domain*], [*Channels* \ (Dimensions)], [*Train samples* \ (Normal)], [*Test samples* \ (Mixed)], [*Anomaly ratio* \ (in the test split)],
+      [Secure Water Treatment (SWaT)], [Water treatment], [51], [496,800], [449,919], [11.98%],
+      [Soil Moisture Active Passive (SMAP)], [Spacecraft telemetry], [25], [135,183], [427,617], [13.13%],
+      [Mars Science Laboratory (MSL)], [Spacecraft telemetry], [55], [58,317], [73,729], [10.72%],
+    ),
+    caption: [Statistics of the three time-series datasets (Source: Jinyu Cai et al. 2025 @cai2025)]
+  )
+  - 16 baselines; AUC, AUPRC#footnote[Area Under the ROC Curve (AUC), Area Under the Precision-Recall Curve (AUPRC)], F1 *without* point adjustment
 ]
 
 #slide[Main Results][
   #figure(
     main-results(),
-    caption: [AUC (Source: Table 2 of @cai2025)],
+    caption: [AUC, AUPRC, and F1 in % (Source: Table 2 of Jinyu Cai et al. 2025 @cai2025)],
   )
-  - Best AUC on all three datasets
-  - Avg. of 9 metrics: *52.11* vs. 46.79 (runner-up, Deep IF)
-  - F1 not best on SMAP / MSL
 ]
 
 #slide[Ablation Study][
   #two-col(ratio: (1.2fr, 1fr))[
     #figure(
       ablation(),
-      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of @cai2025)],
+      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of Jinyu Cai et al. 2025 @cai2025)],
     )
   ][
     #v(20pt)
@@ -229,10 +229,20 @@
   ]
 ]
 
+#slide[Parameter Analysis][
+  #figure(
+    image("assets/fig-2.png", width: 92%),
+    caption: [Sensitivity to window size and $beta$ on SWaT (Source: Jinyu Cai et al. 2025 @cai2025)],
+  )
+  #v(8pt)
+  - *Window size*: best at 80--100; too short or too long both hurt
+  - *$beta$*: sharp drop at $10^(-4)$; peak at $10^(-2)$, stable beyond
+]
+
 #slide[Anomaly Score Visualization][
   #figure(
     image("assets/fig-3.png", width: 100%),
-    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: @cai2025)],
+    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: Jinyu Cai et al. 2025 @cai2025)],
   )
   #v(8pt)
   - TranAD: low scores *inside* the anomaly $->$ anomaly reconstruction
@@ -257,16 +267,20 @@
   ]
 ]
 
-#slide[Why This Paper][
-  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
-]
-
 #slide[My Takeaways][
-  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
+  - *Methodology*:
+    - AAGC as *graph structure learning*
+  - *Evaluation*: report non-point-adjusted metrics in TSAD
+    - Point adjustment marks a whole segment as detected from one hit $->$ inflated scores
+  - *Assumption*: homogeneous sensors
+    - Synchronized, same sampling rate, strongly correlated
+  - *Missing details*: appendix not found
+    - Score visualization: score rises before the anomaly onset $->$ window misaligned?
 ]
 
-#slide[Overlap with My Research][
-  #callout(title: [TODO], kind: "warn")[To be written by the presenter.]
+#slide[Why This Paper & Overlap with My Research][
+  - Interest in *graph neural networks* and *representation learning*
+  - Curious about *dynamic graphs* since a lab meeting
 ]
 
 #slide()[References][
