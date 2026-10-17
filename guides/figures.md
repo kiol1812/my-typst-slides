@@ -150,6 +150,8 @@ cetz.canvas(length: 1cm, {
 - 群組：`group(name: "enc", { ... })`，之後可以用 `"enc.east"`。
 - 相對座標：`(rel: (1, 0), to: "q.east")`；兩點之間：`("q.east", 50%, "k.west")`。
 - 0.5 的破壞性改動：`on-yz` 改名為 `on-zy`；`ortho` 不再接受 `name:`；`tree` 的 `draw-node` / `draw-edge` callback 簽名改變。
+- 函式內寫了 `import cetz.draw: *` 時，參數不要取名為 `stroke`、`fill`、`line`、`circle`、`content` 等 draw 函式的名稱，否則會被同名函式蓋掉，報 `expected length, color, ... found function`。
+- 標題或標籤的內容不要以 `+ ` 或 `- ` 開頭（例如 `[+ Self-perturbed]`），會被解析成編號 / 項目清單；需要時改寫文字或跳脫成 `\+`。
 
 ### cetz-plot 0.1.4
 
@@ -187,6 +189,49 @@ cetz.canvas({
 - 漏掉函式內的 `set text(size: ...)` 時，canvas 文字會繼承 deck 的 28pt，刻度與標籤會擠成一團。
 - `chart.radarchart(labels, data)`：每個值都必須在 `0` 到 `radius`（預設 2）之間，否則斷言失敗；先把資料正規化。
 - 圖小（寬度 5 以下）時刻度標籤容易擠在一起，要設定 `x-tick-step` / `y-tick-step`。
+- 在資料座標放文字用 `plot.annotate({ content((x, y), [...]) })`；標示一段區間的背景色帶用 `plot.add-fill-between(x => y-max, x => y-min, domain: (x0, x1), style: (fill: p.accent.lighten(85%), stroke: none))`，並放在曲線之前。
+
+#### 長條圖上疊加參考線
+
+`chart.*`（`columnchart`、`barchart` 等）把長條包在自己內部的 `plot.plot` 裡，外部無法再加線或標註。需要疊加參考線、門檻值、註記時，改用 `plot.plot` + `plot.add-bar` 自己組，並照搬 columnchart 的預設樣式，外觀就會一致：
+
+```typ
+#import "@preview/cetz-plot:0.1.4": plot
+
+// rows: (([SWaT], v1, v2, ..., vn), ...); the last value is the highlighted method
+cetz.canvas({
+  import cetz.draw: *
+  set-style(axes: (
+    stroke: 0.8pt + p.text,
+    tick: (length: 0, stroke: 0.8pt + p.text),   // columnchart default: no tick marks
+    grid: (stroke: (dash: "dotted")),            // columnchart default: dotted grid
+  ))
+  let bar-width = 0.8                            // columnchart default
+  plot.plot(
+    size: (21, 3),
+    axis-style: "scientific-auto",
+    y-grid: true,
+    x-label: none,                               // otherwise an "x" label appears
+    x-min: -0.5,
+    x-max: rows.len() - 0.5,
+    x-tick-step: none,
+    x-ticks: rows.enumerate().map(((i, row)) => (i, row.at(0))),
+    plot-style: i => (fill: shades.at(calc.rem(i, shades.len())), stroke: none),
+    {
+      plot.add-bar(rows.enumerate().map(((i, row)) => (i, row.slice(1))),
+        x-key: 0, y-key: 1, mode: "clustered", bar-width: bar-width)
+      for (i, row) in rows.enumerate() {
+        plot.add(((i - bar-width / 2, row.last()), (i + bar-width / 2, row.last())),
+          style: (stroke: (paint: p.accent, thickness: 1.2pt, dash: "dashed")))
+      }
+    },
+  )
+})
+```
+
+- clustered 模式下，第 `i` 組長條的範圍是 `i ± bar-width / 2`，參考線用這個範圍就會剛好蓋住整組。
+- `plot-style` 會以「元素序號」呼叫，長條之後加的線也會佔用序號，所以要用 `calc.rem` 取模，避免 `shades.at(i)` 超出範圍；線本身再用 `style:` 指定顏色。
+- 完整範例：`slides/SPAGD/assets/main-results.typ`。
 
 ### fletcher 0.5.8
 
