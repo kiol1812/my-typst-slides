@@ -7,22 +7,29 @@
 ```
 .
 ├─ packages/local/                 # Typst packages，結構為 <namespace>/<name>/<version>/
-│  ├─ slide-kit/0.1.0/             # 跨模板共用元件
-│  │  ├─ typst.toml
-│  │  ├─ lib.typ                   # 只 re-export 公開 API
-│  │  └─ src/                      # 內部實作
-│  └─ theme-basic/0.1.0/           # 模板（依賴 slide-kit）
-│     ├─ typst.toml
-│     └─ lib.typ
+│  ├─ slide-kit/
+│  │  ├─ 0.1.0/                    # callout、code-block（theme-basic 使用）
+│  │  └─ 0.1.1/                    # callout、card、gantt、stat、tag、timeline、flow 等
+│  │     ├─ typst.toml
+│  │     ├─ lib.typ                # 只 re-export 公開 API
+│  │     └─ src/                   # 內部實作
+│  ├─ theme-academic/0.1.0/        # 論文報告模板（依賴 slide-kit 0.1.1），目前 slides 皆使用
+│  └─ theme-basic/0.1.0/           # 簡易模板（依賴 slide-kit 0.1.0）
+├─ templates/slide/                # `just new` 使用的 main.typ / meta.toml 範本
 ├─ slides/
-│  └─ example/         # 每份 slide 一個資料夾：<日期>-<名稱>
+│  ├─ example/                     # 元件展示範例
+│  └─ <slide-id>/                  # 每份 slide 一個資料夾（例如 SPAGD、RL4REAl、scanRL）
 │     ├─ main.typ
 │     ├─ meta.toml                 # 標題、日期、標籤等 metadata
+│     ├─ refs.bib                  # 參考文獻，`just fill` 也從這裡讀取論文資訊
 │     └─ assets/                   # 該 slide 專用的圖片等資源
 ├─ fonts/                          # 字型（CI 與本機一致，避免缺字）
-├─ scripts/build-index.py          # 掃描 meta.toml 產生索引
-├─ docs/                           # 索引輸出（index.md / index.json）
-└─ .github/workflows/release.yml   # 推送 tag 時編譯並發佈
+├─ scripts/
+│  ├─ build-index.py               # 掃描 meta.toml 產生索引
+│  └─ fill_slide_meta.py           # 從 refs.bib 填入 slide 的標題、作者等資訊
+├─ docs/                           # 索引輸出（index.md / index.json，不進版控）
+├─ justfile                        # build / watch / new / fill 指令
+└─ .github/workflows/release.yaml  # 推送 tag 時編譯並發佈
 ```
 
 ## 設計重點
@@ -39,10 +46,10 @@ Typst 不支援從 git repo 取得依賴，套件來源只有 Typst Universe、`
 
 ```typst
 // 模板引用共用元件（版本寫死，確保可重現）
-#import "@local/slide-kit:0.1.0": callout
+#import "@local/slide-kit:0.1.1" as kit
 
 // slide 引用模板
-#import "@local/theme-basic:0.1.0": *
+#import "@local/theme-academic:0.1.0": *
 ```
 
 好處：
@@ -55,25 +62,39 @@ Typst 不支援從 git repo 取得依賴，套件來源只有 Typst Universe、`
 
 Git tag 是整個 repo 共用的名稱，不屬於某個資料夾，所以：
 
-- **Tag**：用帶前綴的命名觸發個別 slide 的 release，格式為 `slides/<slide-id>/v<major>.<minor>.<patch>`，例如 `slides/2026-10-intro-typst/v1.0.0`。
+- **Tag**：用帶前綴的命名觸發個別 slide 的 release，格式為 `slides/<slide-id>/v<major>.<minor>.<patch>`，例如 `slides/SPAGD/v1.0.0`。
 - **分類**：寫在每份 slide 的 `meta.toml`，由腳本產生索引。GitHub Topics 只能標示整個 repo，不適合用來分類個別 slide。
 
 ## 使用方式
 
 ### 新增一份 slide
 
-1. 建立 `slides/<日期>-<名稱>/`，加入 `main.typ` 與 `meta.toml`。
-2. 在 `main.typ` 引用模板：
+1. 建立 slide 資料夾（從 `templates/slide/` 複製，`meta.toml` 的日期自動填今天）：
+
+   ```bash
+   just new <slide-id>
+   ```
+
+2. 把論文的 BibTeX 貼進 `slides/<slide-id>/refs.bib`，再自動填入標題、作者、venue 與年份：
+
+   ```bash
+   just fill <slide-id>            # 使用 refs.bib 的第一筆
+   just fill <slide-id> <bib-key>  # 有多筆時指定 citation key
+   ```
+
+   此腳本會改寫 `main.typ` 中 `#let title-text = "..."` 以及 `title-slide(...)` 的 `authors:`、`venue:`、`year:` 這幾行，與 `meta.toml` 的 `title`。修改模板時請保持這些行的格式。
+
+3. 在 `main.typ` 撰寫內容（`theme-academic`）：
 
    ```typst
-   #import "@local/theme-basic:0.1.0": *
+   #section-slide[Introduction]
 
-   #show: deck.with(title: "標題", author: "你的名字", date: "2026-10-03")
-
-   #slide(title: "第一頁")[
+   #slide[第一頁標題][
      內容
    ]
    ```
+
+   可用元件（`callout`、`card`、`stat`、`tag`、`timeline`、`gantt`、`flow`、`mini`、`versus`、`two-col`）定義於 `packages/local/theme-academic/0.1.0/lib.typ`；`slides/example/main.typ` 有部分元件的使用範例。圖表可另外引用 Universe 套件，例如 `@preview/cetz:0.5.2`、`@preview/cetz-plot:0.1.4`，首次編譯時 Typst 會自動下載。
 
 ### `meta.toml` 欄位
 
@@ -132,17 +153,17 @@ python3 scripts/build-index.py --include-draft  # 包含草稿
 
 ## 維護注意事項
 
-- **固定 Typst 版本**：workflow 內已指定版本，升級前請先確認舊 slide 的編譯結果沒有改變。各 package `typst.toml` 的 `compiler` 欄位為最低版本需求，請依實際使用版本調整。
-- **字型**：模板預設使用 `Noto Sans CJK TC`，請將字型放入 `fonts/`，並確認授權允許放進公開 repo。
+- **固定 Typst 版本**：workflow 固定使用 Typst `0.15.1`，升級前請先確認舊 slide 的編譯結果沒有改變。各 package `typst.toml` 的 `compiler` 欄位（目前為 `0.13.0`）為最低版本需求，請依實際使用版本調整。
+- **字型**：`theme-academic` 使用 Times New Roman / Tinos / Liberation Serif 與 Noto Serif/Sans CJK TC 等字型清單，這些字型不在 `fonts/` 內，會從系統字型中依序尋找；`theme-basic` 使用 `fonts/` 內的教育部標準楷書。新增字型到 `fonts/` 前請確認授權允許放進公開 repo。
 - **大型資產**：圖片、影片過大時請使用 Git LFS，或避免放入 repo。
-- **元件破壞性改動**：複製成新版本資料夾，更新需要的模板 import，舊 slide 不必動。
-- **發佈前請填妥**：各 `typst.toml` 與 workflow 中的作者、`repository`（目前為 `YOUR_NAME` 佔位符）。若要發佈到 Universe，`license` 與 `description` 為必填。
+- **元件破壞性改動**：複製成新版本資料夾（如 `slide-kit/0.1.0` → `0.1.1`），更新需要的模板 import，舊 slide 不必動。
+- **發佈到 Universe**：各 `typst.toml` 已填妥作者、`license`、`description` 與 `repository`，發佈時只需把 import 的 `@local` 改成 `@preview`。
 
 ## 字型與授權
 
 ### 教育部標準楷書（TW-MOE-Std-Kai）
 
-本專案的模板預設使用教育部標準楷書字型（Version 5.1，收錄 13,084 字，適用 Windows、macOS）。
+`theme-basic` 模板預設使用教育部標準楷書字型（Version 5.1，收錄 13,084 字，適用 Windows、macOS）。
 
 - **來源**：請自教育部「國語辭典」相關網站（language.moe.gov.tw）下載，原始檔案放入 `fonts/`。
 - **授權**：創用 CC「姓名標示－禁止改作」。
