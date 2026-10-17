@@ -43,6 +43,6 @@
 
     node((1, 1.75), text(size: sizes.small, fill: p.muted)[spatial], stroke: none, fill: none),
     node((2, 1.75), text(size: sizes.small, fill: p.muted)[temporal], stroke: none, fill: none),
-    node((5, 1.25), text(size: sizes.small, fill: p.muted)[BCE: \ $y = 0$ vs. $1$], stroke: none, fill: none),
+    node((5, 1.25), text(size: sizes.small, fill: p.muted)[binary cross-entropy \ $y = 0$ or $1$], stroke: none, fill: none),
   )
 }

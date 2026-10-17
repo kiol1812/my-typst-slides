@@ -3,6 +3,7 @@
 
 #import "assets/static-correlation.typ": static-correlation
 #import "assets/anomaly-reconstruction.typ": anomaly-reconstruction
+#import "assets/pseudo-boundary.typ": pseudo-boundary
 #import "assets/self-perturbation.typ": self-perturbation
 #import "assets/aagc.typ": aagc
 #import "assets/st-detector.typ": st-detector
@@ -117,22 +118,30 @@
 ]
 
 #slide[Key Idea][
-  #two-col[
-    #card([Reconstruction-based], color: palette.muted)[
-      - Reconstruct normal data
-      - Score = recon. error
-      - Well-fit anomalies *missed*
-    ]
-  ][
-    #card([SPAGD], color: palette.accent)[
-      - Errors $->$ *pseudo-anomalies*
-      - *Classifier*: normal vs. perturbed
-      - Graph *adapts* to candidates
-    ]
-  ]
-  #v(12pt)
-  #callout(title: [Core idea])[
-    Turn the reconstructor's imperfection into supervision.
+  #grid(
+    columns: (auto, 1fr),
+    column-gutter: 20pt,
+    align: horizon,
+    pseudo-boundary(),
+    stack(
+      dir: ttb,
+      spacing: 12pt,
+      card([Why it works])[
+        #set text(size: 18pt)
+        Separating $bold(X)$ from $tilde(bold(X))$ $->$ boundary hugs normal data \
+        No pre-training: pseudo-anomalies go *easy $->$ hard*
+      ],
+      card([Why not random noise?], color: palette.surface)[
+        #set text(size: 18pt)
+        AE errors are *structured*: inter-sensor relations, subtle temporal changes
+      ],
+    ),
+  )
+  #v(10pt)
+  #callout(title: [Open questions], kind: "warn")[
+    #set text(size: 18pt)
+    *Shortcut?* The classifier may learn reconstruction artifacts (e.g., smoothness) \
+    *Alignment?* Errors reflect model capacity, not real anomaly types
   ]
 ]
 
@@ -159,39 +168,23 @@
 #slide(subtitle: [Problem 2: static correlations])[Anomaly-Aware Graph Construction][
   #align(center, aagc())
   #set text(size: 22pt)
-  - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$; top-$m%$ $->$ candidates $cal(M)$
+  - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$
+  - top-$m%$ $->$ candidates $cal(M)$
   - Boost edges touching $cal(M)$, then keep top-$K$:
   $
-    tilde(S)_(i j) = S_(i j) + bb(1)(i in cal(M)) phi(r_i) + bb(1)(j in cal(M)) phi(r_j)
+    tilde(S)_(i j) = S_(i j) + bb(I)(i in cal(M)) phi(r_i) + bb(I)(j in cal(M)) phi(r_j)
   $
 ]
 
 #slide(subtitle: [Problem 3: anomaly reconstruction])[Spatio-Temporal Anomaly Detector][
   #align(center, st-detector())
   #v(8pt)
-  - *Spatial*: GAT on $bold(A)$ (normal) and $tilde(bold(A))$ (perturbed)
-  - *Temporal*: split $T$ into $C$ chunks $->$ TCN $->$ concat
-  - *Classifier*, not reconstruction error $->$ no hand-crafted score
-]
-
-#slide[Training & Inference][
-  #two-col(ratio: (1.3fr, 1fr))[
-    #card([Each training step])[
-      #set text(size: 24pt)
-      #set enum(spacing: 14pt)
-      + $tilde(bold(X)) <- "Tran"_d ("Tran"_e (bold(X)))$
-      + $bold(A) <- "top-"K(S)$, #h(4pt) $tilde(bold(A)) <- "top-"K(tilde(S))$
-      + $hat(p) <- cal(P)([bold(Z)_T; tilde(bold(Z))_T])$, labels $0$ / $1$
-      + Update all modules with $cal(L)$
-    ]
-  ][
-    #v(16pt)
-    $ cal(L) = cal(L)_"sp" + beta cal(L)_"ad" $
-    #v(8pt)
-    - $cal(L)_"ad"$: binary cross-entropy
-    - *End-to-end*, no pre-training
-    - Inference: $hat(p)$ = anomaly score
-  ]
+  - *Spatial*: Graph Attention Network (GAT) on $bold(A)$ (normal) and $tilde(bold(A))$ (perturbed)
+  - *Temporal*: split $T$ into $C$ chunks $->$ Temporal Convolution Network (TCN)
+  - *Classifier*: $hat(p) = cal(P)(cal(Z)_"stack"; Theta_cal(P)), quad hat(p) in [0, 1]^(2N)$
+    $
+      quad quad cal(L)_"ad" = -1/(2N) sum^(2N)_(i=1) [y_i log(hat(p)_i) + (1-y_i)log(1-hat(p)_i)]
+    $
 ]
 
 #section-slide[Experiments]
