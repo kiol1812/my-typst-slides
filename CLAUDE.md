@@ -41,6 +41,10 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 `scripts/fill_slide_meta.py` 以正規表示式改寫 `main.typ`，依賴 `templates/slide/main.typ` 中的固定格式：`#let title-text = "..."` 單行，以及 `title-slide(...)` 內 `authors: [...]`、`venue: [...]`、`year: [...]` 各自一行。修改模板時要維持這些行的格式，否則 `just fill` 會失效。
 
+## 論文報告
+
+製作或修改任何論文報告簡報時，先讀 `guides/paper-report.md` 並遵守：約 12 分鐘、內文英文且字少、先大方向再細節、必備內容與預留頁面（`TODO`）格式。使用者指定不要修改的部分不做任何更動，建議只在對話中提出。
+
 ## 圖形
 
 在 slide 中畫任何圖（cetz、cetz-plot、fletcher 或主題元件組合）之前，先讀 `guides/figures.md` 並遵守，即使沒有使用 `slide-figure` skill。重點：
