@@ -267,7 +267,8 @@
   ]
 ]
 
-#slide[My Takeaways][
+#slide[My Takeaways & Insight][
+  #callout(title: [Takeaway], kind: "info")[Self-generated pseudo-anomalies turn TSAD into self-supervised classification, \ easing the scarcity of real anomalies.]
   - *Methodology*:
     - AAGC as *graph structure learning*
   - *Evaluation*: report non-point-adjusted metrics in TSAD
