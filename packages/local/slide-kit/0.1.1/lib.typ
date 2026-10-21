@@ -6,3 +6,4 @@
 #import "src/style.typ": default-palette, default-sizes
 #import "src/stat.typ": stat
 #import "src/tag.typ": tag
+#import "src/time-line.typ": timeline
