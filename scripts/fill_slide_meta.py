@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 # venue 欄位的優先順序（取第一個有值的）。想改偏好就調這裡。
-VENUE_FIELDS = ["venue", "publisher", "journaltitle", "journal", "booktitle", "eventtitle"]
+VENUE_FIELDS = ["venue", "journaltitle", "journal", "booktitle", "eventtitle", "publisher"]
 
 
 # ───────── BibTeX / BibLaTeX 解析 ─────────

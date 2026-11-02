@@ -13,14 +13,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 just build <slide>          # 編譯 slides/<slide>/main.typ -> out/<slide>.pdf
 just watch <slide>          # 即時預覽（會濾掉含 "font" 的警告行）
-just new <slide>            # 從 templates/slide/ 建立新 slide（main.typ / meta.toml / refs.bib）
+just new <slide> [template] # 從 templates/<template>/ 建立新 slide（預設 slide；compact 為無章節頁版本）
 just fill <slide> [bib-key] # 從 refs.bib 填入 main.typ 的標題、作者、venue、年份與 meta.toml 的 title
 just fig <slide> <name>     # 單獨預覽 slides/<slide>/assets/<name>.typ 的 <name>() -> out/<slide>--<name>.pdf
+just png <slide> [ppi]      # 每頁轉成 PNG 檢查版面 -> out/<slide>-png/
+just check <slide>          # 列出內容溢出、被擠到下一頁的頁面（theme-academic 0.1.2 / 0.2.1 以上）
 python3 scripts/build-index.py [--include-draft]   # 由各 meta.toml 產生 docs/index.md 與 docs/index.json
 typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書有被載入
 ```
 
-沒有測試或 lint；驗證方式就是 `just build <slide>` 能成功編譯且沒有缺字警告。`<slide>` 是 `slides/` 下的資料夾名稱（例如 `SPAGD`、`RL4REAl`），也就是 release tag 中的 slide id。
+沒有測試或 lint；驗證方式是 `just build <slide>` 能成功編譯且沒有缺字警告，新主題的 slide 再加上 `just check <slide>` 沒有溢出頁。`<slide>` 是 `slides/` 下的資料夾名稱（例如 `SPAGD`、`RL4REAl`），也就是 release tag 中的 slide id。
 
 ## 架構
 
@@ -28,9 +30,28 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 1. **`slide-kit`**：跨主題共用元件（callout、card、gantt、stat、tag、timeline、mixed 中的 flow/mini/versus 等）。`lib.typ` 只 re-export 公開 API，實作在 `src/`。元件接受 `palette` / `sizes` 參數，預設值來自 `src/style.typ` 的 `default-palette` / `default-sizes`。
 2. **主題**（`theme-academic`、`theme-basic`）：以 `#import "@local/slide-kit:<ver>" as kit` 引用元件，定義 `deck`、`slide`、`title-slide`、`section-slide`、`outline-slide` 等版面函式，並把 kit 元件包一層、注入主題自己的 palette/sizes（例如 `theme-academic` 的 `academic-palette`，對外以 `default-palette` 匯出）。
-3. **slides**：`slides/<id>/main.typ` 引用主題（目前論文報告都用 `@local/theme-academic:0.1.0`），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
+3. **slides**：`slides/<id>/main.typ` 引用主題（既有 slide 用 `0.1.0` / `0.2.0`；`templates/slide/` 的新 slide 用 `0.1.2`，`templates/compact/` 用 `0.2.1`），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
 
 `theme-academic` 的 `slide` 簽名是 `slide(title, subtitle: none, outlined: false, body)`，所以寫法為 `#slide[標題][內容]`。
+
+`theme-academic` 各版本：
+
+| 版本 | 章節 | 主要差異 |
+| --- | --- | --- |
+| 0.1.0 | `section-slide` 分隔頁 | 原始版本 |
+| 0.1.1 | 同上 | 頁尾章節導覽 |
+| 0.1.2 | 同上（`templates/slide/`） | 0.1.1 + 下方共同新增功能（slide-kit 0.1.2） |
+| 0.2.0 | `#section[...]`，不產生新頁 | 章節顯示在標題上方小字與頁尾導覽；`slide(source:)`、`title-slide(affiliations:)`、`deck(list-sizes:)` |
+| 0.2.1 | 同上（`templates/compact/`） | 0.2.0 + 下方共同新增功能；`list-sizes` 改為 `text-size` |
+
+0.1.2 / 0.2.1 共同新增：
+- `deck(text-size:, lang: "en", debug:)`：清單字級改為相對值（放進 `card`、`callout` 會跟著元件字級）；圖表 supplement 依 `lang` 自動顯示 Figure / Table，表格圖說在上方；原本每份 slide 開頭的 `#set` / `#show` 已收進 `deck`，主題也直接匯出 `palette`。`debug: true` 會在溢出頁標紅字。
+- `slide(source:)`、`source-figure(body, caption:, source:)`、`note[..]`、`best[..]`、`second[..]`。
+- `todo-slide[標題]`（報告者預留頁）、`references-slide(bibliography("refs.bib"))`（`bibliography` 必須在主文件呼叫，路徑才會相對於主文件）。
+- `appendix()`：之後的頁碼顯示為 A1、A2、…（0.1.2 會多一張 A 分隔頁）。References 要放在 `appendix()` 之前，否則也會被編成附錄頁碼。
+- `title-slide(affiliations:)`；year 空白時不印逗號；只有一位報告者時標籤為 Presenter。
+- `card`、`stat`、`mini` 不會被拆到兩頁；`flow` 的階段可用第三個元素指定顏色。
+- 頁尾在有章節時列出可點擊的章節導覽（0.1.1 起），文字太長時導覽移到頁尾線上方靠右。
 
 ### 版本規則
 
@@ -39,11 +60,13 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 ### 模板與腳本的耦合
 
-`scripts/fill_slide_meta.py` 以正規表示式改寫 `main.typ`，依賴 `templates/slide/main.typ` 中的固定格式：`#let title-text = "..."` 單行，以及 `title-slide(...)` 內 `authors: [...]`、`venue: [...]`、`year: [...]` 各自一行。修改模板時要維持這些行的格式，否則 `just fill` 會失效。
+`scripts/fill_slide_meta.py` 以正規表示式改寫 `main.typ`，依賴 `templates/*/main.typ` 中的固定格式：`#let title-text = "..."` 單行，以及 `title-slide(...)` 內 `authors: [...]`、`venue: [...]`、`year: [...]` 各自一行。修改模板時要維持這些行的格式，否則 `just fill` 會失效。
 
 ## 論文報告
 
 製作或修改任何論文報告簡報時，先讀 `guides/paper-report.md` 並遵守：約 12 分鐘、內文英文且字少、先大方向再細節、必備內容與預留頁面（`TODO`）格式。使用者指定不要修改的部分不做任何更動，建議只在對話中提出。
+
+課程作業的論文報告（規範放在 `docs/courses/<課程>/`）以該課程規範為準，與 `guides/paper-report.md` 衝突時（頁數、時間、TODO 頁、References 頁等）依課程規範，並使用 `compact` 模板。
 
 ## 圖形
 
