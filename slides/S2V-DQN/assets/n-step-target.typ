@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 // 1-step vs n-step Q-learning target: observed rewards (primary) + bootstrapped estimate (accent).
 #let n-step-target(palette: (:), sizes: academic-sizes) = {
@@ -45,7 +45,8 @@
     content((6.75, 0), anchor: "south", padding: 0.12, text(fill: p.primary)[$r_(t+n-1)$])
     _bootstrap("bn", (9.9, 0), $max_(v') hat(Q)(h(S_(t+n)), v')$, "qb")
 
-    cetz.decorations.flat-brace((7.5, -0.85), (-0.7, -0.85), amplitude: 0.25,
+    // brace spans the n transitions, from the center of S_t to the center of S_(t+n)
+    cetz.decorations.flat-brace((8.2, -0.95), (0, -0.95), amplitude: 0.25,
       stroke: 0.8pt + p.primary, name: "br")
     content("br.content", anchor: "north", padding: 0.05,
       text(fill: p.primary)[observed: $sum_(i=0)^(n-1) r(S_(t+i), v_(t+i))$])

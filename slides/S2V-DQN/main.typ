@@ -1,4 +1,4 @@
-#import "@local/theme-academic:0.2.0": *
+#import "@local/theme-academic:0.2.1": *
 #import "@preview/cetz:0.5.2"
 #import "assets/problem-setting.typ": problem-setting
 #import "assets/greedy-loop.typ": greedy-loop
@@ -6,7 +6,7 @@
 
 #let title-text = "Learning Combinatorial Optimization Algorithms over Graphs"
 
-#show: deck.with(footer: [S2V-DQN (Khalil et al., NIPS 2017)], list-sizes: (21pt, 18pt, 16pt))
+#show: deck.with(footer: [S2V-DQN (Khalil et al., NIPS 2017)], text-size: 21pt)
 
 #let palette = default-palette + (:)
 
@@ -36,7 +36,6 @@
 
 #slide(source: src[Sec. 1, p. 2 (problem statement); Sec. 2, pp. 3–4; Sec. 4.1, p. 5; diagram self-drawn from these sections (MVC as the example)])[Research Problem & Optimization Problem][
   #align(center, problem-setting())
-  #set text(size: 17pt)
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 14pt,
@@ -56,7 +55,6 @@
 #section[Background]
 
 #slide(source: src[Sec. 1, pp. 1–2; Sec. 4.2, p. 6 (summarized in own words)])[Existing Approaches & Difficulties][
-  #set text(size: 17pt)
   #grid(
     columns: (1fr, 1fr, 1fr, 1.25fr),
     column-gutter: 10pt,
@@ -188,7 +186,6 @@
 #section[Summary]
 
 #slide(source: [Assignment note: generative AI (Claude) was used to organize slides, draw diagrams and typeset formulas; all statements were checked against the paper.])[Summary, Open Question & Next Steps][
-  #set text(size: 17pt)
   #grid(
     columns: (1fr, 1fr, 1fr),
     column-gutter: 12pt,
@@ -206,7 +203,7 @@
     - Ablation idea: S2V + policy gradient vs. S2V + Q-learning
 ]
 
-#section[Appendix]
+#appendix()
 
 #slide(source: src[Table 2 and Sec. 5.2, p. 8; table re-typeset, values unchanged])[Appendix A: Generalization to Larger Graphs][
   #set figure(supplement: "Table")
@@ -233,7 +230,6 @@
     image("assets/fig-3.png", width: 62%),
     caption: [Each dot: one solution on one of 100 BA graphs with 200–300 nodes; CPLEX-$k$: its $k$-th improving solution (Figure 3)],
   )
-  #set text(size: 17pt)
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 16pt,

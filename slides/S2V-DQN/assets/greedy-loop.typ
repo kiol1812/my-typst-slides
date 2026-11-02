@@ -1,5 +1,5 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
-#import "@local/theme-academic:0.2.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 // Classical greedy meta-algorithm (Eq. 1); the evaluation function is the hand-crafted part.
 #let greedy-loop(palette: (:), sizes: academic-sizes) = {
