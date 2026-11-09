@@ -29,7 +29,7 @@
   venue: [NIPS 2017 (Advances in Neural Information Processing Systems 30), proceedings version],
   year: [],
   presenters: ([11557028 楊育哲]),
-  date: [2026/11/11],
+  date: [2026/11/18],
 )
 
 #section[Problem]
