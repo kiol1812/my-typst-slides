@@ -1,6 +1,6 @@
 #import "@local/theme-academic:0.2.1": *
 #import "@preview/cetz:0.5.2"
-#import "assets/problem-setting.typ": problem-setting
+#import "assets/mvc-instance.typ": mvc-instance
 #import "assets/greedy-loop.typ": greedy-loop
 #import "assets/n-step-target.typ": n-step-target
 
@@ -11,22 +11,35 @@
 #let palette = default-palette + (:)
 
 #set figure(supplement: "Figure", numbering: none)
-#show figure: set block(below: 0.6em)
+#show figure: set block(below: 1em)
 #show table: set text(size: 16pt)
 #show footnote.entry: set text(size: 13pt, fill: palette.muted)
 #set footnote.entry(clearance: 8pt, gap: 4pt)
-#show list: set block(above: 0.55em, below: 0.55em)
-#show math.equation.where(block: true): set block(above: 0.5em, below: 0.5em)
+#set block(spacing: 1em)
+#show list: set block(above: 0.8em, below: 0.8em)
+#show math.equation.where(block: true): set block(above: 0.7em, below: 0.7em)
 
 #let note(body) = text(size: 15pt, fill: palette.muted, body)
+#let dim(body) = text(fill: palette.primary, body)
 #let src(body) = [Source: Khalil et al. (NIPS 2017), #body]
+#let eq(n, e) = math.equation(block: true, numbering: (..) => [(#n)], e.body)
+// Items are functions of a height; every item in the row gets the tallest natural height.
+#let equal-row(columns: (), gutter: 14pt, ..items) = layout(size => {
+  let items = items.pos()
+  let autos = columns.zip(items).map(((c, it)) => if c == auto { measure(it(auto)).width } else { 0pt })
+  let fr-total = columns.filter(c => type(c) == fraction).map(c => c / 1fr).sum(default: 0)
+  let free = size.width - gutter * (items.len() - 1) - autos.sum()
+  let widths = columns.zip(autos).map(((c, a)) => if c == auto { a } else { free * (c / 1fr) / fr-total })
+  let h = calc.max(..items.zip(widths).map(((it, w)) => measure(it(auto), width: w).height))
+  grid(columns: widths, column-gutter: gutter, ..items.map(it => it(h)))
+})
 
 // ───────── 封面 ─────────
 #title-slide(
   title: title-text,
   authors: [Hanjun Dai#super[†\*], Elias B. Khalil#super[†\*], Yuyu Zhang#super[†], Bistra Dilkina#super[†], Le Song#super[†§]],
   affiliations: [#super[†]Georgia Institute of Technology #h(1em) #super[§]Ant Financial #h(1em) #super[\*]Equal contribution],
-  venue: [NIPS 2017 (Advances in Neural Information Processing Systems 30), proceedings version],
+  venue: [NIPS 2017 (Advances in Neural Information Processing Systems 30)],
   year: [],
   presenters: ([11557028 楊育哲]),
   date: [2026/11/18],
@@ -34,64 +47,85 @@
 
 #section[Problem]
 
-#slide(source: src[Sec. 1, p. 2 (problem statement); Sec. 2, pp. 3–4; Sec. 4.1, p. 5; diagram self-drawn from these sections (MVC as the example)])[Research Problem & Optimization Problem][
-  #align(center, problem-setting())
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 14pt,
-    card([Instance level: one graph $G(V, E, w)$])[
-      *Adjustable*: node subset $S subset.eq V$ (ordered for TSP) \
-      *Objective* $c(h(S), G)$: MVC min $|S|$ s.t. all edges covered; MAXCUT max cut weight; TSP min tour length
-    ],
-    card([Learning level: the evaluation function], color: palette.accent)[
-      *Adjustable*: $Theta = {theta_i}_(i=1)^7$ of $hat(Q)(h(S), v; Theta)$ \
-      *Given*: $G tilde DD$; helper $h$, cost $c$, termination $t$ \
-      *Goal*: cumulative reward $=$ objective of the final $S$
+#slide(source: src[Sec. 1, p. 2; Sec. 2, p. 3 (MVC; $h$, $c$, $t$); Sec. 5.1, p. 7 ($R(S, G)$); MVC example self-drawn])[Research Problem & Optimization Problem][
+  #equal-row(
+    columns: (auto, 1fr),
+    h => block(height: h, align(horizon, mvc-instance())),
+    h => card([Approximation ratio], height: h)[
+      $ R(S, G) = max(("OPT"(G)) / (c(h(S))), (c(h(S))) / ("OPT"(G))) $
+      MVC: $R = |S| \/ "OPT"(G)$ \
+      #note[$R >= 1$, lower is better; OPT: solver's best within 1 h]
     ],
   )
-  - *Constraints*: every partial $S$ stays feasible; no optimal labels; graph sizes vary
+  - The paper solves *MVC*, MAXCUT and TSP; this talk focuses on *Minimum Vertex Cover (MVC)*
+  #equal-row(
+    columns: (1fr, 1fr),
+    h => card([MVC on a graph $G(V, E, w) tilde DD$], height: h)[
+      *Adjustable*: node subset $S subset.eq V$ \
+      #note[built as an ordered list $S = (v_1, v_2, ...)$] \
+      *Objective*: $min |S|$ \
+      *Constraint*: every edge is covered \
+      #note[$forall (u, v) in E: u in S "or" v in S$]
+    ],
+    h => card([Given by the problem (not learned)], height: h)[
+      *Helper function* $h(S)$: $S$ #sym.arrow.r feasible structure \
+      #note[MVC: does nothing, $h(S) = S$] \
+      *Cost function* $c(h(S), G)$: quality of $S$ \
+      #note[MVC: $c(h(S), G) = |S|$] \
+      *Termination criterion* $t(h(S))$: stop adding? \
+      #note[MVC: true once all edges are covered]
+    ],
+  )
 ]
 
 #section[Background]
 
 #slide(source: src[Sec. 1, pp. 1–2; Sec. 4.2, p. 6 (summarized in own words)])[Existing Approaches & Difficulties][
-  #grid(
-    columns: (1fr, 1fr, 1fr, 1.25fr),
-    column-gutter: 10pt,
-    card([Exact], sub: [Branch-and-bound])[Integer programming \ #text(fill: palette.accent)[Too slow for large instances]],
-    card([Approximation], sub: [Polynomial time])[Provable ratio \ #text(fill: palette.accent)[Weak or no guarantees]],
-    card([Heuristics], sub: [Hand-designed])[Fast in practice \ #text(fill: palette.accent)[Problem-specific trial-and-error]],
-    card([Deep learning], sub: [Pointer Net + PG#footnote[Vinyals et al. 2015; Bello et al. 2016 (refs. [37], [6] of Khalil et al.). Described from Khalil et al., p. 2; not read by the presenter.]], color: palette.accent)[
-      Seq2seq over nodes \
-      #text(fill: palette.accent)[Graph-agnostic; many samples; one update per solution; padding for size]
-    ],
-  )
-  #v(6pt)
+  #{
+    show table: set text(size: 17pt)
+    table(
+      columns: (auto, auto, auto, 1fr),
+      align: left + horizon,
+      inset: (x: 8pt, y: 6pt),
+      fill: (_, y) => if y == 0 { palette.primary },
+      [*Approach*], [*How it works*], [*Strength*], [*Difficulty*],
+      [Exact], [Branch-and-bound, integer programming], [Optimal solution], text(fill: palette.accent)[Too slow for large instances],
+      [Approximation], [Polynomial-time algorithms], [Provable ratio], text(fill: palette.accent)[Weak or no guarantees],
+      [Heuristics], [Hand-designed rules], [Fast in practice], text(fill: palette.accent)[Problem-specific trial-and-error],
+      [Deep learning], [Pointer Net + PG#footnote[Vinyals et al., 2015; Bello et al., 2016]: seq2seq over nodes], [Learned from data], text(fill: palette.accent)[Graph-agnostic; many samples; one update per solution; padding for size],
+    )
+  }
+  #v(4pt)
   - *Common gap*: none exploit that instances recur from the same $DD$
-  - *Policy gradient*: needs on-policy samples after every update#footnote[Gu et al. 2016, Q-Prop (ref. [15] of Khalil et al.). Described from Khalil et al., p. 6; not read by the presenter.]
+  - *Policy gradient*: needs on-policy samples after every update#footnote[Gu et al., 2016]
   #callout(title: [What the authors want to improve], kind: "info")[One learned, graph-aware, data-efficient way to build heuristics for recurring graph problems.]
 ]
 
 #slide(source: src[Eq. (1) p. 3; Eq. (2) pp. 4–5; Eq. (6) p. 6; diagram self-drawn from Sec. 2])[Prerequisite Methods: Core Formulas][
-  #align(center, scale(75%, reflow: true, greedy-loop()))
   #set text(size: 16pt)
-  *A. Greedy meta-algorithm* (Eq. 1): #h(4pt) $v^* := op("argmax")_(v in overline(S)) Q(h(S), v)$ #h(4pt) #note[always feasible, but $Q$ is hand-crafted]
-  #grid(
+  #equal-row(
+    columns: (1fr, auto),
+    h => card([A. Greedy meta-algorithm], height: h)[
+      #eq(1, $ S := (S, v^*), quad v^* := op("argmax")_(v in overline(S)) Q(h(S), v) $)
+      *Role*: always feasible, one node per step \
+      *Difficulty*: $Q$ is hand-crafted
+    ],
+    h => block(height: h, align(horizon, greedy-loop())),
+  )
+  #equal-row(
     columns: (1fr, 1fr),
-    column-gutter: 14pt,
-    card([B. structure2vec#footnote[Dai, Dai & Song, ICML 2016 (ref. [9] of Khalil et al.). Described from Khalil et al., pp. 4–5; not read by the presenter.]: node embedding])[
-      $ mu_v^((t+1)) <- F(x_v, {mu_u^((t))}_(u in N(v)), {w(v, u)}_(u in N(v)); Theta) $
+    h => card([B. structure2vec#footnote[Dai et al., 2016]: node embedding], height: h)[
+      #eq(2, $ mu_v^((t+1)) <- F(x_v, {mu_u^((t))}_(u in N(v)), {w(v, u)}_(u in N(v)); Theta) $)
       *Role*: size-independent features of the $T$-hop neighborhood \
       *Difficulty*: trained with labels (softmax + cross-entropy)
     ],
-    card([C. 1-step Q-learning])[
-      $ (y - hat(Q)(h(S_t), v_t; Theta))^2 $
+    h => card([C. 1-step Q-learning], height: h)[
+      #eq(6, $ (y - hat(Q)(h(S_t), v_t; Theta))^2 $)
       $ y = max_(v') hat(Q)(h(S_(t+1)), v'; Theta) + r(S_t, v_t) $
       *Role*: learns values from rewards, no labels \
       *Difficulty*: objective revealed late $->$ myopic
     ],
   )
-  #v(4pt)
   *S2V-DQN keeps* A and the loss of C; *replaces* $Q$ with B; *trains* B by RL; *adds* n-step targets + replay
 ]
 
@@ -99,56 +133,73 @@
 
 #slide(source: src[Figure 1, p. 2 (cropped); Eq. (3) p. 4; Eq. (4) p. 5; notation unchanged])[Main Method (1): $hat(Q)$ from Graph Embedding][
   #figure(
-    image("assets/fig-1.png", width: 58%),
+    image("assets/fig-1.png", width: 54%),
     caption: [Two greedy iterations on MVC: embed graph + partial solution (yellow), score nodes (green), add the best (Figure 1)],
   )
   #set text(size: 17pt)
-  #grid(
-    columns: (1.15fr, 1fr),
-    column-gutter: 14pt,
-    [
-      *Embedding* (B with a concrete $F$), $T = 4$ rounds
-      $ mu_v^((t+1)) <- "relu"(theta_1 x_v + theta_2 sum_(u in N(v)) mu_u^((t)) + theta_3 sum_(u in N(v)) "relu"(theta_4 w(v, u))) $
-      #note[$x_v = 1$ marks the partial solution; re-embedded after every step]
-    ],
-    [
-      *Score* (replaces hand-crafted $Q$)
-      $ hat(Q)(h(S), v; Theta) = theta_5^top "relu"([theta_6 sum_(u in V) mu_u^((T)), theta_7 mu_v^((T))]) $
-      #note[pooled embedding: state $h(S)$; $mu_v^((T))$: action $v$]
-    ],
-  )
+  *Embedding*, $T = 4$ rounds #h(1fr) #note[$x_v = 1$ marks the partial solution; re-embedded after every step]
+  #eq(3, $ underbrace(mu_v^((t+1)), #dim($p times 1$)) <- "relu"\(underbrace(theta_1, #dim($p times 1$)) underbrace(x_v, #dim($1$)) + underbrace(theta_2, #dim($p times p$)) underbrace(scripts(sum)_(u in N(v)) mu_u^((t)), #dim($p times 1$)) + underbrace(theta_3, #dim($p times p$)) underbrace(scripts(sum)_(u in N(v)) "relu"\(underbrace(theta_4, #dim($p times 1$)) underbrace(w(v, u), #dim($1$))\), #dim($p times 1$))\) $)
+  *Score* (replaces hand-crafted $Q$) #h(1fr) #note[pooled embedding: state $h(S)$; $mu_v^((T))$: action $v$]
+  #eq(4, $ underbrace(hat(Q)(h(S), v; Theta), #dim($1 times 1$)) = underbrace(theta_5^top, #dim($1 times 2p$)) "relu"\(\[underbrace(theta_6, #dim($p times p$)) underbrace(scripts(sum)_(u in V) mu_u^((T)), #dim($p times 1$)), underbrace(theta_7, #dim($p times p$)) underbrace(mu_v^((T)), #dim($p times 1$))\]\) $)
 ]
 
-#slide(source: src[Eq. (5) p. 5; Eq. (6), n-step target and Algorithm 1, p. 6; Algorithm 1 restated; diagram self-drawn])[Main Method (2): n-step Fitted Q-learning][
-  #figure(n-step-target(), caption: [n-step target: sum $n$ observed rewards, then bootstrap once with the current $hat(Q)$])
+#slide(source: src[Eq. (5) p. 5; Eq. (6), n-step target and Algorithm 1, p. 6; diagram self-drawn])[Main Method (2): n-step Fitted Q-learning][
   #set text(size: 16pt)
-  #grid(
-    columns: (1fr, 1.1fr),
-    column-gutter: 14pt,
-    [
-      *Reward* (Eq. 5) #note[cumulative reward $=$ objective]
-      $ r(S, v) = c(h(S'), G) - c(h(S), G), quad S' = (S, v) $
-      *Target and loss* (C with $n$ steps)
+  #equal-row(
+    columns: (1fr, 1fr),
+    _ => [
+      #layout(size => {
+        let fig = n-step-target()
+        scale(size.width / measure(fig).width * 100%, reflow: true, fig)
+      })
+      #note[sum $n$ observed rewards, then bootstrap once with the current $hat(Q)$]
+      #v(4pt)
+      *Reward* #note[cumulative reward $=$ objective]
+      #eq(5, $ r(S, v) = c(h(S'), G) - c(h(S), G), quad S' = (S, v) $)
+      *n-step target* (C with $n$ steps)
       $ y = sum_(i=0)^(n-1) r(S_(t+i), v_(t+i)) + max_(v') hat(Q)(h(S_(t+n)), v'; Theta) $
-      $ min_Theta (y - hat(Q)(h(S_t), v_t; Theta))^2 $
-      #note[fitted Q-iteration: SGD on replay batches, not one sample]
+      *Loss* #note[SGD on replay batches, not one sample]
+      #eq(6, $ (y - hat(Q)(h(S_t), v_t; Theta))^2 $)
     ],
-    block(
+    h => block(
+      height: h,
+      width: 100%,
       fill: palette.highlight.lighten(85%),
       inset: 10pt,
       radius: 4pt,
-      width: 100%,
       {
-        [*Algorithm 1* (one episode per graph)]
-        set par(leading: 0.5em)
-        set enum(numbering: "1:", spacing: 0.55em)
-        enum(
-          [Init replay memory $M$; *for* episode: $G tilde DD$, $S_1 = ()$],
-          [#h(1em)*for* $t = 1$ *to* $T$:],
-          [#h(2em)$v_t =$ random w.p. $epsilon$, else $op("argmax")_(v in overline(S)_t) hat(Q)(h(S_t), v; Theta)$],
-          [#h(2em)$S_(t+1) := (S_t, v_t)$],
-          [#h(2em)*if* $t >= n$: add $(S_(t-n), v_(t-n), R_(t-n,t), S_t)$ to $M$],
-          [#h(3em)sample $B tilde M$; SGD on $(y - hat(Q))^2$ over $B$],
+        set text(size: 15pt)
+        [*Algorithm 1* Q-learning for the Greedy Algorithm]
+        v(-2pt)
+        line(length: 100%, stroke: 0.8pt + palette.text)
+        let lines = (
+          (0, [Initialize experience replay memory $M$ to capacity $N$]),
+          (0, [*for* episode $e = 1$ *to* $L$ *do*]),
+          (1, [Draw graph $G$ from distribution $DD$]),
+          (1, [Initialize the state to empty $S_1 = ()$]),
+          (1, [*for* step $t = 1$ *to* $T$ *do*]),
+          (2, [$v_t = display(cases(
+            "random node" v in overline(S)_t\, & "w.p." epsilon,
+            op("argmax")_(v in overline(S)_t) hat(Q)(h(S_t), v; Theta)\, & "otherwise",
+          ))$]),
+          (2, [Add $v_t$ to partial solution: $S_(t+1) := (S_t, v_t)$]),
+          (2, [*if* $t >= n$ *then*]),
+          (3, [Add tuple $(S_(t-n), v_(t-n), R_(t-n,t), S_t)$ to $M$]),
+          (3, [Sample random batch $B tilde M$ (iid.)]),
+          (3, [Update $Theta$ by SGD over (6) for $B$]),
+          (2, [*end if*]),
+          (1, [*end for*]),
+          (0, [*end for*]),
+          (0, [*return* $Theta$]),
+        )
+        grid(
+          columns: (auto, 1fr),
+          column-gutter: 8pt,
+          row-gutter: 0.62em,
+          align: (right + horizon, left + horizon),
+          ..lines.enumerate().map(((i, (d, body))) => (
+            text(fill: palette.muted)[#(i + 1):], pad(left: d * 1.2em, body),
+          )).flatten(),
         )
       },
     ),
@@ -157,109 +208,54 @@
 
 #section[Evidence]
 
-#slide(source: src[Figure 2 (cropped) and Sec. 5.1, pp. 7–8; Sec. 5 Instance generation, PN-AC, Baselines, Validation and Testing, pp. 6–7])[Evidence: Approximation Ratio on Synthetic Graphs][
-  #figure(
-    image("assets/fig-2.png", width: 82%),
-    caption: [Approximation ratio on 1000 test graphs; train and test from the same distribution (Figure 2)],
-  )
+#slide(source: src[Figure 2(a), p. 8 (cropped); Sec. 5 Instance generation, PN-AC, Baselines, Validation and Testing, pp. 6–7; Sec. 5.1, p. 8])[Evidence: Approximation Ratio on MVC][
   #set text(size: 15pt)
-  #show list: set block(above: 0.4em, below: 0.4em)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 16pt,
-    card([Setup. Claim: beats heuristics and PN-AC])[
-      *Data*: BA graphs (MVC, MAXCUT); random points (TSP) \
-      *Compared*: PN-AC (rank-8 SVD input); heuristics \
-      *Same*: test graphs; OPT $=$ 1-hour CPLEX / Concorde \
-      *Not stated*: training size, PN-AC budget, error bars
-    ],
-    card([Reading. y: $max(c\/"OPT", "OPT"\/c)$, lower is better], color: palette.accent)[
-      *x*: nodes in train / test graphs (same range) \
-      MVC $approx 1$; MAXCUT lowest (MaxcutApprox close) \
-      TSP: on par with Farthest, 2-opt \
-      *Supports*: near-optimal on the training distribution \
-      *Cannot infer*: S2V or Q-learning? (both differ from PN-AC)
-    ],
+  #equal-row(
+    columns: (1.15fr, 1fr),
+    _ => figure(
+      image("assets/fig-2a.png", width: 100%),
+      caption: [MVC on BA graphs, 1000 test graphs; train and test from the same distribution (Figure 2(a))],
+    ),
+    h => block(height: h, {
+      card([Setup. Claim: beats MVC baselines and PN-AC])[
+        *Data*: BA graphs; train / test sizes in the same range \
+        *Compared*: PN-AC (rank-8 SVD of adjacency as input); \
+        MVCApprox, MVCApprox-Greedy (2-approximations) \
+        *Same*: 1000 test graphs; OPT $=$ CPLEX best within 1 h \
+        *Not stated*: training set size, PN-AC budget, meaning of error bars
+      ]
+      card([Reading. $R = |S| \/ "OPT"$, lower is better])[
+        *x*: number of nodes in train / test graphs \
+        S2V-DQN $approx 1$ at every size (bar barely visible) \
+        Others $approx 1.2$–$1.5$; MVCApprox worst \
+        *Supports*: near-optimal MVC on the training distribution \
+        *Cannot infer*: S2V or Q-learning? Other distributions?
+      ]
+    }),
   )
 ]
 
 #section[Summary]
 
 #slide(source: [Assignment note: generative AI (Claude) was used to organize slides, draw diagrams and typeset formulas; all statements were checked against the paper.])[Summary, Open Question & Next Steps][
-  #grid(
-    columns: (1fr, 1fr, 1fr),
-    column-gutter: 12pt,
-    mini("1", [Feasibility])[Greedy + helper $h$; only $hat(Q)$ is learned],
-    mini("2", [Objective as return])[Reward $=$ change in cost; return $=$ objective],
-    mini("3", [Data efficiency])[n-step targets + replay; update every step],
+  #equal-row(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    gutter: 12pt,
+    ..(
+      ("1", [Feasibility], [Add nodes until $t$: all edges covered; only $hat(Q)$ is learned]),
+      ("2", [Return = objective], [Reward $=$ change in $|S|$, so return tracks $|S|$ of the final cover]),
+      ("3", [Data efficiency], [n-step targets + replay; update every step]),
+      ("4", [Evidence], [$R approx 1$ on BA graphs up to 500 nodes (Figure 2(a))]),
+    ).map(((k, name, body)) => h => { set block(height: h); mini(k, name, body) }),
   )
   #v(6pt)
-  #callout(title: [Open question: sign of the reward for minimization], kind: "warn")[
-    Eq. (5) with MVC cost $c = |S|$ gives $r = +1$, yet Table 1 lists $r = -1$. \
-    Is $r = -(c(h(S')) - c(h(S)))$ intended for MVC / TSP? Not stated (pp. 3, 5–6).
+  #callout(title: [Open question: the max in the approximation ratio], kind: "warn")[
+    $R(S, G) = max("OPT"\/c, c\/"OPT")$, but OPT is only the best 1-hour CPLEX solution (p. 7). \
+    If S2V-DQN finds a smaller cover ($|S| < "OPT"$), then $R = "OPT"\/|S| > 1$: a better solution scores worse. \
+    Yet p. 8 says such cases give ratios below 1. Which definition do Table 2 / Figure 3 use? Not stated.
   ]
-  - *Directions for the 40-minute in-depth study*
-    - n-step fitted Q-iteration vs. 1-step: what $n$ trades off#footnote[Riedmiller 2005; Mnih et al. 2013 (refs. [33], [28] of Khalil et al., p. 6). Not read yet; planned for the in-depth study.]
-    - Ablation idea: S2V + policy gradient vs. S2V + Q-learning
+  - *Directions for the 40-minute in-depth study (MVC, MAXCUT, TSP)*
+    - MAXCUT / TSP: how $h$, $c$, $t$ change (cut set, insertion helper); why TSP gains less
 ]
 
-#appendix()
-
-#slide(source: src[Table 2 and Sec. 5.2, p. 8; table re-typeset, values unchanged])[Appendix A: Generalization to Larger Graphs][
-  #set figure(supplement: "Table")
-  #figure(
-    kind: table,
-    table(
-      columns: (auto,) + (1fr,) * 7,
-      align: (left + horizon,) + (center + horizon,) * 7,
-      [*Test size*], [50–100], [100–200], [200–300], [300–400], [400–500], [500–600], [1000–1200],
-      [MVC (BA)], [1.0033], [1.0041], [1.0045], [1.0040], [1.0045], [1.0048], [1.0062],
-      [MAXCUT (BA)], [1.0150], [1.0181], [1.0202], [1.0188], [1.0123], [1.0177], [1.0038],
-      [TSP (clustered)], [1.0730], [1.0895], [1.0869], [1.0918], [1.0944], [1.0975], [1.1065],
-    ),
-    caption: [Average approximation ratio over 1000 test graphs; trained on 50–100 nodes only (Table 2)],
-  )
-  - Same $Theta$ for every size: embedding and $hat(Q)$ do not depend on $|V|$
-  - MVC / MAXCUT stay within 2.1% up to 1200 nodes; TSP grows to 1.1065
-  - "OPT" is 1-hour CPLEX, weaker on large graphs \
-    #note[the paper attributes lower ratios on larger graphs (e.g. MAXCUT 1000–1200) to this]
-]
-
-#slide(source: src[Figure 3 (cropped) and Sec. 5.3, pp. 8–9])[Appendix B: Running Time vs. Solution Quality][
-  #figure(
-    image("assets/fig-3.png", width: 62%),
-    caption: [Each dot: one solution on one of 100 BA graphs with 200–300 nodes; CPLEX-$k$: its $k$-th improving solution (Figure 3)],
-  )
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 16pt,
-    [
-      - Complexity $O(k |E|)$, $k <=$ number of greedy steps
-      - MVC, 1200 nodes: 11 s on one GPU, ratio 1.0062
-    ],
-    [
-      - Slower than approximation algorithms, much better ratio
-      - Ratio below 1 at times: beats 1-hour CPLEX
-      - GPU vs. CPU: not a fair speed comparison #note[(p. 9)]
-    ],
-  )
-]
-
-#slide(source: src[Table 3 and Sec. 5.4, p. 9; table re-typeset, values unchanged])[Appendix C: Real-world Data][
-  #set figure(supplement: "Table")
-  #figure(
-    kind: table,
-    table(
-      columns: (auto, auto, 1fr, 1.6fr, 1.6fr),
-      align: (left + horizon, left + horizon, center + horizon, center + horizon, center + horizon),
-      [*Problem*], [*Dataset*], [*S2V-DQN*], [*Best competitor*], [*2nd best competitor*],
-      [MVC], [MemeTracker], [*1.0021*], [1.2220 (MVCApprox-Greedy)], [1.4080 (MVCApprox)],
-      [MAXCUT], [Physics], [*1.0223*], [1.2825 (MaxcutApprox)], [1.8996 (SDP)],
-      [TSP], [TSPLIB], [*1.0475*], [1.0800 (Farthest)], [1.0947 (2-opt)],
-    ),
-    caption: [Average approximation ratio on public benchmark / real-world instances (Table 3)],
-  )
-  - Best on all three problems, including TSP
-  - Contrast: on synthetic TSP, Farthest and 2-opt were on par (Figure 2)
-  - Dataset details: in the paper's Appendix C, not in the proceedings version read
-]
+// #include "appendix.typ"

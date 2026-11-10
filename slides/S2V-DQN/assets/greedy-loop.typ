@@ -18,16 +18,16 @@
     node((0, 0), [Partial solution \ $S$, tags $x_v$], name: <s>),
     node((1, 0), [Score every $v in overline(S)$ \ $Q(h(S), v)$], name: <q>, ..hot),
     node((2, 0), [Select \ $v^* = op("argmax") Q$], name: <sel>),
-    node((3, 0), [Extend \ $S := (S, v^*)$], name: <ext>),
-    node((4, 0), [$t(h(S))$?], name: <t>, shape: fletcher.shapes.diamond),
-    node((5, 0), [Done], name: <done>, shape: fletcher.shapes.pill),
+    node((2, 1), [Extend \ $S := (S, v^*)$], name: <ext>),
+    node((1, 1), [$t(h(S))$?], name: <t>, shape: fletcher.shapes.diamond),
+    node((0, 1), [Done], name: <done>, shape: fletcher.shapes.pill),
 
     edge(<s>, <q>, "-|>"),
     edge(<q>, <sel>, "-|>"),
     edge(<sel>, <ext>, "-|>"),
     edge(<ext>, <t>, "-|>"),
     edge(<t>, <done>, "-|>", note[yes], label-side: left),
-    edge(<t>, <s>, "-|>", bend: 22deg, note[no], label-side: left),
+    edge(<t>, <q>, "-|>", note[no], label-side: left),
 
     node((1, -0.85), text(size: sizes.small, fill: p.accent)[hand-crafted per problem], stroke: none, fill: none),
   )
