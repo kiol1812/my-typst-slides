@@ -44,7 +44,7 @@ just build <id>         # whole deck
 ```
 
 - 兩者都必須成功。除了來自 `theme-academic/.../lib.typ` 的既有字型警告，不能有其他警告。
-- 輸出 PNG 檢查版面：`pdftoppm -r 60 -png out/<id>--<name>.pdf <scratchpad>/<name>`（整份 slide 用 `just png <id>`），再用 Read 看圖。新主題的 slide 另跑 `just check <id>` 確認放入圖後沒有溢出頁。確認文字沒有重疊或溢出、圖沒有超出內容區、配色來自主題、跟同份 slide 其他頁的觀感一致。有問題就修改後重新驗證。
+- 輸出 PNG 檢查版面：`pdftoppm -r 60 -png out/<id>--<name>.pdf <scratchpad>/<name>`（整份 slide 用 `just png <id>`），再用 Read 看圖。新主題的 slide 另跑 `just check <id>` 確認放入圖後沒有溢出頁；有溢出時先調整排版或圖的尺寸，不要調整字級（見 `CLAUDE.md`）。確認文字沒有重疊或溢出、圖沒有超出內容區、配色來自主題、跟同份 slide 其他頁的觀感一致。有問題就修改後重新驗證。
 - 編譯錯誤時先查 refs 原始碼中的簽名，不要用猜的反覆嘗試。
 
 ## 6. 回報

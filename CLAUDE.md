@@ -22,7 +22,11 @@ python3 scripts/build-index.py [--include-draft]   # 由各 meta.toml 產生 doc
 typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書有被載入
 ```
 
-沒有測試或 lint；驗證方式是 `just build <slide>` 能成功編譯且沒有缺字警告，新主題的 slide 再加上 `just check <slide>` 沒有溢出頁。`<slide>` 是 `slides/` 下的資料夾名稱（例如 `SPAGD`、`RL4REAl`），也就是 release tag 中的 slide id。
+沒有測試或 lint；驗證方式是 `just build <slide>` 能成功編譯且沒有缺字警告，新主題的 slide 再加上 `just check <slide>` 沒有溢出頁。
+
+處理溢出頁時不要調整字級（包含程式碼、圖說、表格與 `#set text(size:)`）。依序嘗試：改變排版（例如 `grid` 改成左右並排、調整欄寬比例、把內容移進 `card` 並排）、縮小圖片或截圖寬度、精簡或拆分內容（文字改動要先徵求使用者同意）。都無法解決時，在對話中列出選項讓使用者決定。
+
+`<slide>` 是 `slides/` 下的資料夾名稱（例如 `SPAGD`、`RL4REAl`），也就是 release tag 中的 slide id。
 
 ## 架構
 
