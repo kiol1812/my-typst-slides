@@ -80,7 +80,7 @@
 
 #section[Background]
 
-#slide(source: src[Sec. 1, pp. 1–2; Sec. 4.2, p. 6 (summarized in own words)])[Existing Approaches & Difficulties][
+#slide(source: src[Sec. 1, pp. 1–2 (problem statement)])[Existing Approaches & Difficulties][
   #{
     show table: set text(size: 17pt)
     table(
@@ -92,13 +92,13 @@
       [Exact], [Branch-and-bound, integer programming], [Optimal solution], text(fill: palette.accent)[Too slow for large instances],
       [Approximation], [Polynomial-time algorithms], [Provable ratio], text(fill: palette.accent)[Weak or no guarantees],
       [Heuristics], [Hand-designed rules], [Fast in practice], text(fill: palette.accent)[Problem-specific trial-and-error],
-      [Deep learning], [Pointer Net + PG#footnote[Vinyals et al., 2015; Bello et al., 2016]: seq2seq over nodes], [Learned from data], text(fill: palette.accent)[Graph-agnostic; many samples; one update per solution; padding for size],
+      [Deep learning], [Pointer Networks#footnote[Vinyals et al., 2015; Bello et al., 2016]: seq2seq over nodes], [Learned from data], text(fill: palette.accent)[Graph-agnostic; many samples; one update per solution; padding for size],
     )
   }
   #v(4pt)
   - *Common gap*: none exploit that instances recur from the same $DD$
   - *Policy gradient*: needs on-policy samples after every update#footnote[Gu et al., 2016]
-  #callout(title: [What the authors want to improve], kind: "info")[One learned, graph-aware, data-efficient way to build heuristics for recurring graph problems.]
+  #callout(title: [Problem Statement], kind: "info")[Given a graph optimization problem G and a distribution D of problem  instances, can we learn better heuristics that generalize to unseen instances from D?]
 ]
 
 #slide(source: src[Eq. (1) p. 3; Eq. (2) pp. 4–5; Eq. (6) p. 6; diagram self-drawn from Sec. 2])[Prerequisite Methods: Core Formulas][
@@ -131,7 +131,7 @@
 
 #section[Method]
 
-#slide(source: src[Figure 1, p. 2 (cropped); Eq. (3) p. 4; Eq. (4) p. 5; notation unchanged])[Main Method (1): $hat(Q)$ from Graph Embedding][
+#slide(source: src[Figure 1, p. 2 (cropped); Eq. (3) p. 4; Eq. (4) p. 5])[Main Method (1): $hat(Q)$ from Graph Embedding][
   #figure(
     image("assets/fig-1.png", width: 54%),
     caption: [Two greedy iterations on MVC: embed graph + partial solution (yellow), score nodes (green), add the best (Figure 1)],
@@ -208,51 +208,55 @@
 
 #section[Evidence]
 
-#slide(source: src[Figure 2(a), p. 8 (cropped); Sec. 5 Instance generation, PN-AC, Baselines, Validation and Testing, pp. 6–7; Sec. 5.1, p. 8])[Evidence: Approximation Ratio on MVC][
+#slide(source: src[Figure 2(a), p. 8 (cropped); Sec. 5 Instance generation, PN-AC, Baselines, Validation and Testing, pp. 6–7; Sec. 5.1, p. 8; Table 2 (MVC row, values unchanged) and Sec. 5.2, p. 8])[Evidence: Approximation Ratio on MVC][
   #set text(size: 15pt)
   #equal-row(
-    columns: (1.15fr, 1fr),
+    columns: (0.62fr, 1fr),
     _ => figure(
       image("assets/fig-2a.png", width: 100%),
-      caption: [MVC on BA graphs, 1000 test graphs; train and test from the same distribution (Figure 2(a))],
+      caption: [Same train / test distribution (Figure 2(a))],
     ),
-    h => block(height: h, {
-      card([Setup. Claim: beats MVC baselines and PN-AC])[
-        *Data*: BA graphs; train / test sizes in the same range \
-        *Compared*: PN-AC (rank-8 SVD of adjacency as input); \
-        MVCApprox, MVCApprox-Greedy (2-approximations) \
-        *Same*: 1000 test graphs; OPT $=$ CPLEX best within 1 h \
-        *Not stated*: training set size, PN-AC budget, meaning of error bars
-      ]
-      card([Reading. $R = |S| \/ "OPT"$, lower is better])[
-        *x*: number of nodes in train / test graphs \
-        S2V-DQN $approx 1$ at every size (bar barely visible) \
-        Others $approx 1.2$–$1.5$; MVCApprox worst \
-        *Supports*: near-optimal MVC on the training distribution \
-        *Cannot infer*: S2V or Q-learning? Other distributions?
-      ]
-    }),
+    h => card([Setup. Claim: beats MVC baselines and PN-AC], height: h)[
+      *Data*: BA graphs; train / test sizes in the same range \
+      *Compared*: PN-AC (rank-8 SVD of adjacency as input); \
+      MVCApprox, MVCApprox-Greedy (2-approximations) \
+      *Same*: 1000 test graphs; OPT $=$ CPLEX best within 1 h \
+      *Not stated*: meaning of error bars \
+      *Reading* ($R = |S| \/ "OPT"$, lower is better): \
+      S2V-DQN $approx 1$ at every size; others $approx 1.2$–$1.5$ \
+      *Supports*: near-optimal MVC
+    ],
   )
+  #card([Generalization to larger instances: train on 50–100 nodes only, test up to 1200 (Table 2)])[
+    #table(
+      columns: (auto,) + (1fr,) * 7,
+      align: (left + horizon,) + (center + horizon,) * 7,
+      inset: (x: 6pt, y: 4pt),
+      fill: (_, y) => if y == 0 { palette.primary },
+      [*Test size*], [50–100], [100–200], [200–300], [300–400], [400–500], [500–600], [1000–1200],
+      [MVC (BA)], [1.0033], [1.0041], [1.0045], [1.0040], [1.0045], [1.0048], [1.0062],
+    )
+    *Caveat*: 1-hour CPLEX "OPT" gets worse on larger graphs (p. 8), so ratios at larger sizes look optimistic
+  ]
 ]
 
 #section[Summary]
 
 #slide(source: [Assignment note: generative AI (Claude) was used to organize slides, draw diagrams and typeset formulas; all statements were checked against the paper.])[Summary, Open Question & Next Steps][
   #equal-row(
-    columns: (1fr, 1fr, 1fr, 1fr),
+    columns: (1fr, 1fr, 1fr),
     gutter: 12pt,
     ..(
       ("1", [Feasibility], [Add nodes until $t$: all edges covered; only $hat(Q)$ is learned]),
-      ("2", [Return = objective], [Reward $=$ change in $|S|$, so return tracks $|S|$ of the final cover]),
-      ("3", [Data efficiency], [n-step targets + replay; update every step]),
-      ("4", [Evidence], [$R approx 1$ on BA graphs up to 500 nodes (Figure 2(a))]),
+      ("2", [Data efficiency], [n-step targets + replay; update every step]),
+      ("3", [Evidence], [$R approx 1$ on BA graphs up to 500 nodes (Figure 2(a))]),
     ).map(((k, name, body)) => h => { set block(height: h); mini(k, name, body) }),
   )
   #v(6pt)
   #callout(title: [Open question: the max in the approximation ratio], kind: "warn")[
     $R(S, G) = max("OPT"\/c, c\/"OPT")$, but OPT is only the best 1-hour CPLEX solution (p. 7). \
     If S2V-DQN finds a smaller cover ($|S| < "OPT"$), then $R = "OPT"\/|S| > 1$: a better solution scores worse. \
-    Yet p. 8 says such cases give ratios below 1. Which definition do Table 2 / Figure 3 use? Not stated.
+    Yet p. 8 says such cases give ratios below 1.
   ]
   - *Directions for the 40-minute in-depth study (MVC, MAXCUT, TSP)*
     - MAXCUT / TSP: how $h$, $c$, $t$ change (cut set, insertion helper); why TSP gains less
