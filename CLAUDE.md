@@ -18,6 +18,7 @@ just fill <slide> [bib-key] # 從 refs.bib 填入 main.typ 的標題、作者、
 just fig <slide> <name>     # 單獨預覽 slides/<slide>/assets/<name>.typ 的 <name>() -> out/<slide>--<name>.pdf
 just png <slide> [ppi]      # 每頁轉成 PNG 檢查版面 -> out/<slide>-png/
 just check <slide>          # 列出內容溢出、被擠到下一頁的頁面（theme-academic 0.1.2 / 0.2.1 以上）
+just export <slide>         # 匯出最小可編譯專案（簡報、assets、用到的本地套件版本、README）-> out/<slide>.zip
 python3 scripts/build-index.py [--include-draft]   # 由各 meta.toml 產生 docs/index.md 與 docs/index.json
 typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書有被載入
 ```

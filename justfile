@@ -66,3 +66,7 @@ fig slide name:
       "$theme" "{{name}}" "{{name}}" \
       | typst compile --root . --package-path packages --font-path fonts \
           --diagnostic-format short - "out/{{slide}}--{{name}}.pdf"
+
+# minimal standalone project (source, assets, used local packages, README) -> out/<slide>.zip
+export slide:
+    python3 scripts/export-slide.py {{slide}}
