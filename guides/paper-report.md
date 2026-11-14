@@ -68,7 +68,13 @@
 ## 5. 圖
 
 - 自己畫的圖依 `guides/figures.md`，放在 `slides/<id>/assets/<name>.typ`。
-- 論文原圖：從 `docs/papers/<id>.pdf` 以 300 dpi 截取，存成 `slides/<id>/assets/fig-<論文圖號>.png`，並在 caption 註明來源。
+- 論文原圖：不要從論文 PDF 截圖（投影時會糊）。改用論文公開的原始圖檔：
+  - 先請使用者下載論文的原始檔（arXiv 的「TeX Source」，或作者公開的 repo / 專案頁），解壓到 `docs/papers/<id>/`。
+  - 在 `.tex` 中找 `\includegraphics` 對應到論文圖號的檔案（注意 `page=`、子圖 `(a)`/`(b)` 由多個檔案拼成的情況）。
+  - 複製到 `slides/<id>/assets/fig-<論文圖號>.<原副檔名>`（子圖用 `fig-3a`、`fig-3b`），不要引用 `docs/papers/` 的路徑或絕對路徑。PDF 直接用 `image("assets/fig-1.pdf")` 嵌入向量圖，多頁 PDF 加 `page:`；子圖用 `grid` 並排並補上 `(a) ...` 標籤。
+  - 不修改圖檔內容（不轉檔、不重新點陣化）；caption 註明來源。
+  - 只有使用者明確表示找不到原始圖檔時，才從 `docs/papers/<id>.pdf` 以 300 dpi 截取，存成 `slides/<id>/assets/fig-<論文圖號>.png`。
+- 論文中的表格（LaTeX `tabular`）沒有圖檔：在 slide 中用 Typst `table` 重新排版，數值不改；同樣不要截圖。
 - 原圖已經畫好整體架構時，不要重畫；自己畫的圖用來解釋原圖沒講清楚的機制（例如某個模組內部如何運作）。
 
 ## 6. 協作規則

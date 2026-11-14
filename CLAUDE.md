@@ -82,6 +82,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 - 圖畫在 `slides/<id>/assets/<name>.typ` 的同名函式中，`main.typ` 只能具名 import（不可 `*`），圖檔不能動到主文件的設定。
 - 顏色與字級取自主題的 `default-palette` / `academic-sizes`，不寫死顏色、不設定字型。
 - 完成後 `just fig` 與 `just build` 都要成功。
+- 論文原圖不要截圖：請使用者下載論文原始檔（arXiv TeX Source 等）放到 `docs/papers/<id>/`，把用到的原始圖檔複製進 `slides/<id>/assets/`（PDF 直接以 `image()` 嵌入）。使用者明確表示找不到原始檔時才截圖。細節見 `guides/paper-report.md` 第 5 節。
 
 ## 注意事項
 
