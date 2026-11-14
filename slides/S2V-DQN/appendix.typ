@@ -28,7 +28,14 @@
 
 #slide(source: src[Figure 3 (cropped) and Sec. 5.3, pp. 8–9])[Appendix B: Running Time vs. Solution Quality][
   #figure(
-    image("assets/fig-3.png", width: 62%),
+    box(width: 62%, grid(
+      columns: (1fr, 1fr),
+      column-gutter: 8pt,
+      row-gutter: 4pt,
+      align: center,
+      image("assets/fig-3a.pdf", width: 100%), image("assets/fig-3b.pdf", width: 100%),
+      note[(a) MVC BA 200–300], note[(b) MAXCUT BA 200–300],
+    )),
     caption: [Each dot: one solution on one of 100 BA graphs with 200–300 nodes; CPLEX-$k$: its $k$-th improving solution (Figure 3)],
   )
   #grid(

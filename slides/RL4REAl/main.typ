@@ -216,14 +216,12 @@
   #v(4pt)
   *RL4ReAl keeps* $chi(v)$ as hard action masks and Greedy's decision types; *replaces* hand-tuned choices with four learned policies; *trains* them with PPO (Proximal Policy Optimization)#footnote[Schulman et al., 2017]\; *adds* MIR2Vec + GGNN (Gated Graph Neural Network) states
 ]
-// TODO, page 2.
-// tablealize old methods
 
 #section[Method]
 
 #slide(source: src[Figure 3, p. 5 (cropped); agent states and action spaces from Sec. 3.2, pp. 4–5; table re-typeset])[Main Method (1): Hierarchical Masked Agents][
   #figure(
-    image("assets/fig-3.png", width: 78%),
+    image("assets/fig-3.pdf", width: 78%),
     caption: [LLVM builds $G$ and MIR2Vec features; agents decide via gRPC; LLVM applies splits and the final color map (Figure 3)],
   )
   #set text(size: 16pt)

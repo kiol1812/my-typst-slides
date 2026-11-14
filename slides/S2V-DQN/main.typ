@@ -133,7 +133,7 @@
 
 #slide(source: src[Figure 1, p. 2 (cropped); Eq. (3) p. 4; Eq. (4) p. 5])[Main Method (1): $hat(Q)$ from Graph Embedding][
   #figure(
-    image("assets/fig-1.png", width: 54%),
+    image("assets/fig-1.pdf", page: 3, width: 47%),
     caption: [Two greedy iterations on MVC: embed graph + partial solution (yellow), score nodes (green), add the best (Figure 1)],
   )
   #set text(size: 17pt)
@@ -213,7 +213,7 @@
   #equal-row(
     columns: (0.62fr, 1fr),
     _ => figure(
-      image("assets/fig-2a.png", width: 100%),
+      image("assets/fig-2a.pdf", width: 100%),
       caption: [Same train / test distribution (Figure 2(a))],
     ),
     h => card([Setup. Claim: beats MVC baselines and PN-AC], height: h)[
