@@ -219,131 +219,145 @@
 
 #section[Method]
 
-#slide(source: src[Figure 3, p. 5 (cropped); agent states and action spaces from Sec. 3.2, pp. 4–5; table re-typeset])[Main Method (1): Hierarchical Masked Agents][
+#slide(source: src[Figure 3, p. 5; agent states, action spaces and rewards from Sec. 3.2, pp. 4–6])[Main Method: Hierarchical Masked Agents][
+  #set text(size: 16pt)
   #figure(
-    image("assets/fig-3.pdf", width: 78%),
+    image("assets/fig-3.pdf", width: 86%),
     caption: [LLVM builds $G$ and MIR2Vec features; agents decide via gRPC; LLVM applies splits and the final color map (Figure 3)],
   )
-  #set text(size: 16pt)
   #table(
-    columns: (auto, 1fr, 1.15fr),
-    align: (left + horizon, left + horizon, left + horizon),
+    columns: (auto, 1.3fr, 1fr, 1.1fr),
+    align: (left + horizon,) * 4,
     stroke: none,
     inset: (x: 6pt, y: 3.5pt),
     table.hline(stroke: 0.8pt + palette.text),
-    [*Agent* (level)], [*State*], [*Legal action space* (mask)],
+    [*Agent*], [*State*], [*Legal actions* (mask)], [*Reward*],
     table.hline(stroke: 0.6pt + palette.muted),
-    [Node selector $omega_upsilon$ (top)], [$chevron.l [|G|], M(V) chevron.r$ #note[GGNN embeddings]], [$A(omega_upsilon) = V_"nclr"$ (uncolored nodes)],
-    [Task selector $omega_tau$ (mid)], [$chevron.l [|v|], |chi(v)|, delta(v), |K(v)|, M(v) chevron.r$], [${phi, chi}$ if $|K(v)| >= k$ ($k = 2$), else $chi$],
-    [Splitter $omega_phi$ (low)], [$chevron.l [|v|], cal(M)(v), D_v chevron.r$ #note[use weights, distances]], [$A(omega_phi) = K$ (use points of $v$)],
-    [Coloring $omega_xi$ (low)], [$chevron.l [|v|], |chi(v)|, |V_"nclr"| chevron.r$], [$chi(v)$ if $|chi(v)| > 0$, $mu(v)$ otherwise],
+    [Node selector $omega_upsilon$], [$chevron.l [|G|], M(V) chevron.r$], [$V_"nclr"$ (uncolored)],
+    table.cell(rowspan: 2)[$R(omega_xi)$ if $chi$, $0$ if $phi$],
+    [Task selector $omega_tau$], [$chevron.l [|v|], |chi(v)|, delta(v), |K(v)|, M(v) chevron.r$], [${phi, chi}$ if $|K(v)| >= 2$, else $chi$],
+    [Splitter $omega_phi$], [$chevron.l [|v|], cal(M)(v), D_v chevron.r$], [$K$ (use points of $v$)], [$M(v) - M(v') - M(v'')$],
+    [Coloring $omega_xi$], [$chevron.l [|v|], |chi(v)|, |V_"nclr"| chevron.r$], [$chi(v)$, or $mu(v)$ if empty], [$+M(v)$ color, $-M(v)$ spill],
+    table.hline(stroke: 0.6pt + palette.muted),
+    [Global $R_G$ (G only)], table.cell(colspan: 2)[LLVM-MCA throughput vs. Greedy, per function], [$+10$ if $>=$ Greedy, else $-10$],
     table.hline(stroke: 0.8pt + palette.text),
-  )
-  #v(2pt)
-  Order $omega_upsilon prec omega_tau prec {omega_phi, omega_xi}$; illegal registers are never offered #sym.arrow.r no correction phase
-]
-
-#slide(source: src[rewards from Sec. 3.2, pp. 4–6; loop self-arranged from Sec. 3.2, Sec. 5 (p. 6) and Algorithm 1 (p. 5); PPO update schedule not stated in the paper])[Main Method (2): Rewards & Allocation Loop][
-  #set text(size: 16pt)
-  #grid(
-    columns: (1fr, 1.1fr),
-    column-gutter: 14pt,
-    [
-      *Coloring* #note[high spill weight $=$ important node]
-      $ R(omega_xi) = cases(+M(v) & "if" chi(v), -M(v) & "if" mu(v)) $
-      *Splitting* #note[positive if total spill weight drops]
-      $ R(omega_phi) = M(v) - sum_(i in {v', v''}) M(i) $
-      *Task / node selector* #note[split reward deferred]
-      $ R(omega_tau) = R(omega_upsilon) = cases(R(omega_xi) & quad tau = chi, 0 & quad tau = phi) $
-      *Global* (model G only) #note[LLVM-MCA throughput]
-      $ R_G = cases(+10 & quad italic("Th")_italic("RL4ReAl") >= italic("Th")_italic("Greedy"), -10 & quad italic("Otherwise")) $
-    ],
-    block(
-      fill: palette.highlight.lighten(85%),
-      inset: 10pt,
-      radius: 4pt,
-      width: 100%,
-      {
-        [*One function, restated*]
-        set par(leading: 0.5em)
-        set enum(numbering: "1:", spacing: 0.6em)
-        enum(
-          [LLVM: MIR #sym.arrow.r $G$, MIR2Vec features; GGNN #sym.arrow.r $[|G|]$],
-          [*while* $V_"nclr" != emptyset$:],
-          [#h(1em)$v <- omega_upsilon$ over $V_"nclr"$; #h(4pt) $tau <- omega_tau$ (masked)],
-          [#h(1em)*if* $tau = phi$: $k <- omega_phi$; LLVM splits $v -> v', v''$ (Alg. 1), returns new $G$],
-          [#h(1em)*else*: $omega_xi$ picks $r in chi(v)$, or spills $v$ if $chi(v) = emptyset$],
-          [Color map #sym.arrow.r LLVM: assign, spill, code generation],
-          [Rewards above #sym.arrow.r PPO update of each $pi_omega$],
-        )
-      },
-    ),
   )
 ]
 
 #section[Evidence]
 
-#slide(source: src[Table 3 and Sec. 6.3, p. 8; Sec. 6.1–6.2, pp. 7–8; table re-typeset, values unchanged; add marks])[Evidence: Runtime on x86 SPEC CPU][
-  #let rl(v) = best[#v]
+#slide(source: src[Sec. 6.1, p. 7; Figure 4 and Sec. 6.2, p. 8; Sec. 6.3, pp. 8–9; Table 3, p. 8])[Evidence (1): Setup of Runtime on x86 SPEC CPU][
+  #set text(size: 16pt)
+  #table(
+    columns: (auto, 1fr),
+    align: (left + horizon, left + horizon),
+    stroke: none,
+    inset: (x: 8pt, y: 3pt),
+    fill: (_, y) => if y == 0 { palette.text } else if calc.even(y) { palette.text.lighten(93%) },
+    table.hline(stroke: 0.8pt + palette.text),
+    [*Question*], [*Answer from the paper*],
+    [*Claim*], [Learned allocator on par with LLVM's tuned allocators in runtime],
+    [*Task / data*], [SPEC CPU 2006 + 2017, C/C++ $<$ 1 MLOC; 18 benchmarks compiled #note[4 compile, 4 runtime errors excluded]],
+    [*Model*], [Four FC agents + GGNN states; PPO, standard hyperparameters, until reward converges],
+    [*Training set*], [5K random SPEC 2017 functions with 120–500 vertices #note[of about 11K]],
+    [*Compared*], [Basic (reference), PBQP, Greedy; RL4ReAl-L (local rewards), RL4ReAl-G (+ $R_G$)],
+    [*Same*], [LLVM 10.0.1; Xeon W2133 (6 cores, 32 GB); median of 3 runs],
+    [*Changed*], [Only the allocator; RL4ReAl handles 120–500-vertex functions, others by Greedy],
+    [*Metric*], [Runtime gain over Basic, Basic $-$ x (s); higher is better #note[noise $<$ 1% (95% CI, 8 runs), libquantum up to 1.8%]],
+    table.hline(stroke: 0.8pt + palette.text),
+  )
+  #grid(
+    columns: (52%, 1fr),
+    column-gutter: 14pt,
+    align: horizon,
+    figure(
+      image("assets/fig-4.pdf", width: 100%),
+      caption: [Interference graphs of 45 hot SPEC 2017 functions (Figure 4)],
+    ),
+    card([Characterization: why 120–500 vertices])[
+      Hot: $>=$ 5% of benchmark time (`perf`) \
+      44 / 45 have $>$ 120 vertices; 31 in 120–500 \
+      Vertices $tilde$ interferences, register pressure: near linear #sym.arrow.r larger graphs are harder
+    ],
+  )
+]
+
+#slide(source: src[Table 3 and Sec. 6.3, pp. 8–9; table re-typeset, values and highlights unchanged])[Evidence (2): Reading Runtime on x86 SPEC CPU][
+  // f: highest, s: second highest, as marked in the paper
+  #let hi(mark, v) = if mark == "f" { table.cell(fill: palette.accent.lighten(70%), v) } else if mark == "s" { table.cell(fill: palette.highlight.lighten(40%), v) } else { v }
+  #let row(name, ..cells) = ([#name],) + cells.pos().map(c => if type(c) == array { hi(..c) } else { c })
   #let rows06 = (
-    ([401.bzip2], [-7.3], [7.5], [-1.1], rl[10.8]),
-    ([429.mcf], [1.4], [-2.9], rl[2.7], [-3.6]),
-    ([445.gobmk], [-3.3], [6.4], [2.4], [1.7]),
-    ([456.hmmer], [1.8], [6.1], [5.0], [-37.6]),
-    ([462.libquantum], [-10.1], [-1.1], [-2.2], [-6.7]),
-    ([471.omnetpp], [0.7], [0.4], rl[1.2], rl[1.2]),
-    ([433.milc], [-16.6], [0.1], [-13.8], [-7.0]),
-    ([470.lbm], [-7.9], [3.0], [2.3], [1.4]),
-    ([482.sphinx3], [-37.5], [1.6], [-3.1], [-2.7]),
+    row([401.bzip2], [360.6], [-7.3], ("s", [7.5]), [-1.1], ("f", [10.8])),
+    row([429.mcf], [233.8], ("s", [1.4]), [-2.9], ("f", [2.7]), [-3.6]),
+    row([445.gobmk], [322.3], [-3.3], ("f", [6.4]), ("s", [2.4]), [1.7]),
+    row([456.hmmer], [284.3], [1.8], ("f", [6.1]), ("s", [5.0]), [-37.6]),
+    row([462.libquantum], ("f", [256.4]), [-10.1], ("s", [-1.1]), [-2.2], [-6.7]),
+    row([471.omnetpp], [305.7], ("s", [0.7]), ("s", [0.4]), ("f", [1.2]), ("f", [1.2])),
+    row([433.milc], ("f", [349.1]), [-16.6], ("f", [0.1]), [-13.8], ("s", [-7.0])),
+    row([470.lbm], [184.0], [-7.9], ("f", [3.0]), ("s", [2.3]), [1.4]),
+    row([482.sphinx3], [366.0], [-37.5], ("f", [1.6]), [-3.1], ("s", [-2.7])),
   )
   #let rows17 = (
-    ([505.mcf_r], [4.5], [-1.6], rl[8.6], [-4.7]),
-    ([520.omnetpp_r], [6.4], [6.4], [2.4], [2.8]),
-    ([531.deepsjeng_r], [4.6], [16.0], [9.9], [12.8]),
-    ([541.leela_r], [1.6], [7.1], [0.4], [1.9]),
-    ([557.xz_r], [-0.6], [11.9], rl[12.1], [-8.5]),
-    ([508.namd_r], [2.5], [23.5], [9.1], rl[23.8]),
-    ([519.lbm_r], [1.4], [57.7], [50.9], rl[58.1]),
-    ([538.imagick_r], [-16.9], [115.5], rl[118.8], rl[118.4]),
-    ([544.nab_r], [5.8], [132.1], [131.3], rl[134.4]),
+    row([505.mcf_r], [344.9], ("s", [4.5]), [-1.6], ("f", [8.6]), [-4.7]),
+    row([520.omnetpp_r], [475.7], ("f", [6.4]), ("f", [6.4]), ("s", [2.4]), ("s", [2.8])),
+    row([531.deepsjeng_r], [299.9], [4.6], ("f", [16.0]), [9.9], ("s", [12.8])),
+    row([541.leela_r], [439.5], [1.6], ("f", [7.1]), [0.4], ("s", [1.9])),
+    row([557.xz_r], [371.5], [-0.6], ("s", [11.9]), ("f", [12.1]), [-8.5]),
+    row([508.namd_r], [236.5], [2.5], ("f", [23.5]), [9.1], ("f", [23.8])),
+    row([519.lbm_r], [261.8], [1.4], ("f", [57.7]), ("s", [50.9]), ("f", [58.1])),
+    row([538.imagick_r], [479.3], [-16.9], ("s", [115.5]), ("f", [118.8]), ("f", [118.4])),
+    row([544.nab_r], [417.5], [5.8], ("s", [132.1]), ("s", [131.3]), ("f", [134.4])),
   )
-  #let tab(head, rows) = {
-    set text(size: 13pt)
-    table(
-      columns: (auto, 1fr, 1fr, 1fr, 1fr),
-      align: (left,) + (right,) * 4,
-      stroke: none,
-      inset: (x: 5pt, y: 2.2pt),
-      table.hline(stroke: 0.8pt + palette.text),
-      [*#head*], [PBQP], [Greedy], [RL-L], [RL-G],
-      table.hline(stroke: 0.6pt + palette.muted),
-      ..rows.flatten(),
-      table.hline(stroke: 0.8pt + palette.text),
-    )
-  }
   #set figure(supplement: "Table")
-  #figure(
-    kind: table,
-    grid(columns: (1fr, 1fr), column-gutter: 16pt, tab([SPEC CPU 2006], rows06), tab([SPEC CPU 2017], rows17)),
-    caption: [Runtime gain over Basic, Basic $-$ x (s), higher is better; #best[bold]: RL4ReAl beats Greedy (Table 3). Average: PBQP $-3.9$, Greedy *21.7*, L 18.7, G 16.5],
-  )
-  #set text(size: 15pt)
-  #show list: set block(above: 0.4em, below: 0.4em)
-  #equal-row(
-    columns: (1fr, 1.1fr),
-    gutter: 16pt,
-    h => card([Setup. Claim: on par with LLVM allocators], height: h)[
-      *Machine*: Xeon W2133; LLVM 10.0.1; median of 3 runs \
-      *Train*: PPO, 5K random SPEC 2017 functions; others by Greedy \
-      *Compared*: Basic, PBQP, Greedy; L $=$ local, G $=$ + global reward \
-      *Not stated*: whether test functions were held out
-    ],
-    h => card([Reading], height: h)[
-      Speedup over Basic: L 14 / 18, G 11 / 18 benchmarks \
-      Beats Greedy: L 5, G 6; average still below Greedy \
-      *Supports*: competitive with tuned heuristics, x86 \
-      *Cannot infer*: gain of each agent; G not better than L (hmmer $-37.6$)
-    ],
+  #grid(
+    columns: (60%, 1fr),
+    column-gutter: 16pt,
+    align: horizon,
+    figure(
+      kind: table,
+      {
+        set text(size: 13pt)
+        let hd(body) = text(fill: white, weight: "bold", body)
+        table(
+          columns: 6,
+          align: (left,) + (right,) * 5,
+          stroke: none,
+          inset: (x: 5pt, y: 1.6pt),
+          fill: (_, y) => if y < 3 { palette.text },
+          table.hline(stroke: 0.8pt + palette.text),
+          table.cell(rowspan: 3, align: center + horizon)[*Benchmarks*],
+          table.cell(rowspan: 3, align: center + horizon)[*Runtime* \ *Basic*],
+          table.cell(colspan: 4, align: center)[*Diff. from Basic (Basic $-$ x)*],
+          table.hline(start: 2, stroke: 0.5pt + palette.muted.lighten(40%)),
+          table.cell(rowspan: 2, align: center + horizon)[#hd[PBQP]],
+          table.cell(rowspan: 2, align: center + horizon)[#hd[Greedy]],
+          table.cell(colspan: 2, align: center)[#hd[RL4ReAl]],
+          table.hline(start: 4, end: 6, stroke: 0.5pt + palette.muted.lighten(40%)),
+          table.cell(align: center)[#hd[L]], table.cell(align: center)[#hd[G]],
+          table.hline(stroke: 0.6pt + palette.text),
+          ..rows06.flatten(),
+          table.hline(stroke: 0.6pt + palette.text),
+          ..rows17.flatten(),
+          table.hline(stroke: 0.6pt + palette.text),
+          table.cell(colspan: 2, align: right)[*Average*], [-3.9], [21.7], [18.7], [16.5],
+          table.hline(stroke: 0.8pt + palette.text),
+        )
+      },
+      caption: [Runtime improvement (s) on x86 over Basic, highlighting the #box(fill: palette.accent.lighten(70%), outset: 2pt)[Highest] and #box(fill: palette.highlight.lighten(40%), outset: 2pt)[Second highest] improvements (Table 3)],
+    ),
+    {
+      set text(size: 15pt)
+      card([Reading])[
+        Speedup over Basic: L 14 / 18, G 11 / 18 \
+        Beats Greedy: L 5, G 6; most slow-downs within 1% of Greedy \
+        Average below Greedy: 21.7 vs. L 18.7, G 16.5
+      ]
+      card([Support range])[
+        *Supports*: competitive with tuned heuristics, x86 \
+        *Cannot infer*: gain of each agent (no ablation) \
+        *Cannot infer*: benefit of $R_G$; G worse than L (hmmer $-37.6$)
+      ]
+    },
   )
 ]
 
@@ -360,13 +374,13 @@
     ).map(((k, name, body)) => h => { set block(height: h); mini(k, name, body) }),
   )
   #v(6pt)
-  #callout(title: [Open question: how is the global reward used in training?], kind: "warn")[
-    $R_G = plus.minus 10$ is computed once per function, but the agents get per-step rewards. \
-    Which agents receive $R_G$, at which step, with what discount? Not stated (pp. 5–7).
+  #callout(title: [Open question: how are the highlights in Table 3 decided?], kind: "warn")[
+    Near-equal values share a mark (namd_r: 23.5 / 23.8); Basic counts as 0 (libquantum, milc). \
+    But sphinx3 marks G $-2.7$ second over Basic 0; otherwise "17 / 18" becomes 16 / 18. \
+    Rule not stated (Sec. 6.3, p. 8).
   ]
   - *Directions for the 40-minute in-depth study*
-    - PPO with four cooperating agents: joint or separate updates#footnote[Schulman et al., 2017]
-    - Ablation idea: remove the splitter, or replace masks by penalties
+    - Training: PPO over four agents; where $R_G$ enters#footnote[Schulman et al., 2017]
 ]
 
 // #include "appendix.typ"
