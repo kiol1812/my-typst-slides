@@ -402,6 +402,9 @@
   left, right,
 )
 
+// Row of blocks sharing the tallest height: #equal-row(columns: (1fr, 1fr), h => card(..., height: h)[..], ...)
+#let equal-row = kit.equal-row
+
 #let callout(title: none, kind: "info", palette: (:), sizes: academic-sizes, body) = kit.callout(
   title: title, kind: kind, palette: academic-palette + palette, sizes: sizes, body,
 )

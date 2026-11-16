@@ -2,6 +2,7 @@
 #import "src/callout.typ": callout
 #import "src/card.typ": card
 #import "src/gantt.typ": gantt
+#import "src/layout.typ": equal-row
 #import "src/mixed.typ": *
 #import "src/style.typ": default-palette, default-sizes
 #import "src/stat.typ": stat

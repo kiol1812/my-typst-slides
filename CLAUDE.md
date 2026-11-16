@@ -55,6 +55,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 - `todo-slide[標題]`（報告者預留頁）、`references-slide(bibliography("refs.bib"))`（`bibliography` 必須在主文件呼叫，路徑才會相對於主文件）。
 - `appendix()`：之後的頁碼顯示為 A1、A2、…（0.1.2 會多一張 A 分隔頁）。References 要放在 `appendix()` 之前，否則也會被編成附錄頁碼。
 - `title-slide(affiliations:)`；year 空白時不印逗號；只有一位報告者時標籤為 Presenter。
+- `equal-row(columns:, gutter:, ..items)`：一列區塊取最高者的高度，每個 item 是接收高度的函式（`h => card(..., height: h)[..]`）。
 - `card`、`stat`、`mini` 不會被拆到兩頁；`flow` 的階段可用第三個元素指定顏色。
 - 頁尾在有章節時列出可點擊的章節導覽（0.1.1 起），文字太長時導覽移到頁尾線上方靠右。
 
@@ -71,7 +72,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 製作或修改任何論文報告簡報時，先讀 `guides/paper-report.md` 並遵守：約 12 分鐘、內文英文且字少、先大方向再細節、必備內容與預留頁面（`TODO`）格式。使用者指定不要修改的部分不做任何更動，建議只在對話中提出。
 
-課程作業的論文報告（規範放在 `docs/courses/<課程>/`）以該課程規範為準，與 `guides/paper-report.md` 衝突時（頁數、時間、TODO 頁、References 頁等）依課程規範，並使用 `compact` 模板。
+課程作業的論文報告（規範放在 `docs/courses/<課程>/`）以該課程規範為準，與 `guides/paper-report.md` 衝突時（頁數、時間、TODO 頁、References 頁等）依課程規範，並使用 `compact` 模板。課程若有 `guides/courses/<課程>.md`，先讀它：裡面是依該課程規範整理出的頁面配置與寫法慣例（例如 Optimization HW2 見 `guides/courses/optimization-hw2.md`）。
 
 ## 圖形
 
