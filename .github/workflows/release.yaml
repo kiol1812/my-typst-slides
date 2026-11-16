@@ -1,7 +1,7 @@
 name: release
 on:
   push:
-    tags: ["slides/*/v*"]
+    tags: ["slides/*/v*", "batch/*"]
 
 permissions:
   contents: write
@@ -14,15 +14,36 @@ jobs:
       - uses: typst-community/setup-typst@v4
         with:
           typst-version: "0.15.1"
+      - name: Resolve slides
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            slides/*)
+              echo "${GITHUB_REF_NAME}" | cut -d/ -f2 > slides.list
+              ;;
+            batch/*)
+              list="batches/${GITHUB_REF_NAME#batch/}.txt"
+              if [ ! -f "$list" ]; then
+                echo "::error::$list not found"
+                exit 1
+              fi
+              sed -e 's/#.*//' -e 's/[[:space:]]//g' "$list" | grep -v '^$' > slides.list
+              ;;
+          esac
+          if [ ! -s slides.list ]; then
+            echo "::error::no slides to build"
+            exit 1
+          fi
+          cat slides.list
       - name: Compile
         run: |
-          name=$(echo "${GITHUB_REF_NAME}" | cut -d/ -f2)
           mkdir -p out
-          typst compile \
-            --root . \
-            --package-path packages \
-            --font-path fonts \
-            "slides/$name/main.typ" "out/$name.pdf"
+          while read -r name; do
+            typst compile \
+              --root . \
+              --package-path packages \
+              --font-path fonts \
+              "slides/$name/main.typ" "out/$name.pdf"
+          done < slides.list
       - uses: softprops/action-gh-release@v2
         with:
           files: out/*.pdf

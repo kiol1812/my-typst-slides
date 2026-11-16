@@ -139,6 +139,17 @@ git push origin slides/example/v1.0.0
 
 推送符合 `slides/*/v*` 的 tag 後，workflow 會以 tag 中的 slide id 編譯 `slides/<id>/main.typ`，並把 PDF 附加到對應的 GitHub Release。
 
+一次發佈多份 slide 到同一個 Release 時，在 `batches/<name>.txt` 列出 slide id（每行一個，`#` 之後為註解），commit 後推送 `batch/<name>` tag：
+
+```bash
+printf 'AlphaDev\nRL4REAl\n' > batches/w2.txt
+git add batches/w2.txt && git commit -m "chore: add w2 batch"
+git tag batch/w2
+git push origin batch/w2
+```
+
+workflow 會依序編譯清單中的 slide，全部 PDF 附加到 `batch/w2` 這個 Release。`build-index.py` 只看 `slides/<id>/v*` tag，batch release 不會出現在索引的下載連結中。
+
 ### 產生索引
 
 ```bash

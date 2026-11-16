@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案概要
 
-用 Typst 撰寫投影片的 monorepo：共用元件、模板與每份 slide 都在同一個 repo。推送 `slides/<slide-id>/v<x.y.z>` 格式的 tag 會觸發 `.github/workflows/release.yaml`，編譯該 slide 並把 PDF 發佈到 GitHub Release。CI 固定使用 Typst 0.15.1。
+用 Typst 撰寫投影片的 monorepo：共用元件、模板與每份 slide 都在同一個 repo。推送 `slides/<slide-id>/v<x.y.z>` 格式的 tag 會觸發 `.github/workflows/release.yaml`，編譯該 slide 並把 PDF 發佈到 GitHub Release。推送 `batch/<name>` tag 則會編譯 `batches/<name>.txt` 列出的所有 slide（每行一個 id），放進同一個 Release。CI 固定使用 Typst 0.15.1。
 
 ## 常用指令
 
