@@ -34,6 +34,7 @@
 | 字母編號的條列方塊                     | `mini(letter, name)[說明]`                                          |
 | 含標題的方塊 / 註解框 / 小標籤         | `card(head)[..]`、`callout(title: .., kind: ..)[..]`、`tag[..]`     |
 | 左右分欄                               | `two-col(ratio: (1fr, 1fr))[左][右]`                                |
+| 並排方塊取相同高度                     | `equal-row(columns: (1fr, 1fr), h => card(.., height: h)[..], ..)`（theme-academic 0.1.2 / 0.2.1 起） |
 | 灰色補充說明、結果表最佳 / 次佳        | `note[..]`、`best[..]`、`second[..]`（theme-academic 0.1.2 / 0.2.1 起） |
 
 上面都不適用時，依圖形性質選工具：

@@ -18,7 +18,7 @@ description: 在某份 slide 中繪製或修改圖形（示意圖、架構圖、
 
 依 `guides/figures.md` 第 2 節的決策表：
 
-1. 主題元件（`flow`、`timeline`、`gantt`、`stat`、`versus`、`mini`、`card`、`callout`、`tag`、`two-col`）能表達的，直接在 `main.typ` 使用，不建立圖檔。
+1. 主題元件（`flow`、`timeline`、`gantt`、`stat`、`versus`、`mini`、`card`、`callout`、`tag`、`two-col`、`equal-row`）能表達的，直接在 `main.typ` 使用，不建立圖檔。
 2. 否則選 fletcher（節點與箭頭）、cetz-plot（資料與函數）或 cetz（自由繪圖），可以和主題元件組合。
 3. 選擇不明顯時，用一句話告訴使用者選了哪個工具、原因是什麼，然後直接做。
 

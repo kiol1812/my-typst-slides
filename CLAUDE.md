@@ -33,7 +33,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 三層依賴，皆為放在 repo 內的 Typst package（`packages/local/<name>/<version>/`，以 `@local/<name>:<version>` 引用）：
 
-1. **`slide-kit`**：跨主題共用元件（callout、card、gantt、stat、tag、timeline、mixed 中的 flow/mini/versus 等）。`lib.typ` 只 re-export 公開 API，實作在 `src/`。元件接受 `palette` / `sizes` 參數，預設值來自 `src/style.typ` 的 `default-palette` / `default-sizes`。
+1. **`slide-kit`**：跨主題共用元件（callout、card、gantt、stat、tag、timeline、mixed 中的 flow/mini/versus、layout 中的 equal-row 等）。`lib.typ` 只 re-export 公開 API，實作在 `src/`。元件接受 `palette` / `sizes` 參數，預設值來自 `src/style.typ` 的 `default-palette` / `default-sizes`。
 2. **主題**（`theme-academic`、`theme-basic`）：以 `#import "@local/slide-kit:<ver>" as kit` 引用元件，定義 `deck`、`slide`、`title-slide`、`section-slide`、`outline-slide` 等版面函式，並把 kit 元件包一層、注入主題自己的 palette/sizes（例如 `theme-academic` 的 `academic-palette`，對外以 `default-palette` 匯出）。
 3. **slides**：`slides/<id>/main.typ` 引用主題（既有 slide 用 `0.1.0` / `0.2.0`；`templates/slide/` 的新 slide 用 `0.1.2`，`templates/compact/` 用 `0.2.1`），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
 
@@ -63,6 +63,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 - import 一律寫死版本。對元件或主題做破壞性改動時，複製成新的版本資料夾（如 `slide-kit/0.1.1/` 之於 `0.1.0/`），更新需要的主題 import，舊 slide 不動。
 - 修改既有版本的 package 會影響所有引用它的 slide，改完應重新編譯受影響的 slide 確認。
+- 只新增元件、不改既有行為時，可直接加在既有版本（先確認有哪些 slide 引用該版本）。
 
 ### 模板與腳本的耦合
 
@@ -84,6 +85,19 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 - 顏色與字級取自主題的 `default-palette` / `academic-sizes`，不寫死顏色、不設定字型。
 - 完成後 `just fig` 與 `just build` 都要成功。
 - 論文原圖不要截圖：請使用者下載論文原始檔（arXiv TeX Source 等）放到 `docs/papers/<id>/`，把用到的原始圖檔複製進 `slides/<id>/assets/`（PDF 直接以 `image()` 嵌入）。使用者明確表示找不到原始檔時才截圖。細節見 `guides/paper-report.md` 第 5 節。
+
+## 文件同步
+
+新增功能、修改 packages、模板、justfile、腳本或 workflow 時，同一次修改內一併更新受影響的文件，不要留到之後；完成後在對話中列出改了哪些文件。對照：
+
+| 改動 | 要檢查的文件 |
+| --- | --- |
+| 新增 / 修改 package 元件或版本 | `CLAUDE.md`（架構、版本表）、`README.md`（目錄結構、範例 import）、`guides/figures.md` 第 2 節元件表、`.claude/skills/slide-figure/SKILL.md` |
+| 模板 | `CLAUDE.md`、`README.md`、`.claude/skills/new-slide/SKILL.md`、`guides/courses/*.md`；`just fill` 依賴的行格式不可破壞 |
+| justfile 指令、`scripts/` | `CLAUDE.md` 常用指令、`README.md` 使用方式 |
+| `.github/workflows/`、tag 或 batch 格式 | `CLAUDE.md` 專案概要、`README.md`（Tag、發佈 release） |
+| 新增目錄或頂層檔案 | `README.md` 目錄結構 |
+| 寫作 / 圖形規範 | `guides/*.md` 與對應的 skill |
 
 ## 注意事項
 
