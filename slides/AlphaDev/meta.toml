@@ -1,0 +1,6 @@
+title    = "Faster Sorting Algorithms Discovered Using Deep Reinforcement Learning"
+date     = 2026-11-16
+tags     = ["paper"]
+template = "theme-academic"
+status   = "published"
+summary  = "AlphaDev casts assembly program search as a single-player game and uses AlphaZero-style RL to discover shorter, faster small sorting routines now in LLVM libc++."

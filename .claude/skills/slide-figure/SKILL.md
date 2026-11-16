@@ -11,13 +11,14 @@ description: 在某份 slide 中繪製或修改圖形（示意圖、架構圖、
 
 - slide id：使用者正在處理的 `slides/<id>/`；不明確時從對話脈絡或最近修改的 slide 判斷，仍無法確定才詢問。
 - 讀 `slides/<id>/main.typ`：確認使用哪個主題、目前的 import、圖要放在哪張 `#slide`。
-- 圖的內容：使用者描述、論文圖片（`assets/*.png` 等）或論文文字。從論文圖重繪時，先讀圖片再動手。
+- 圖的內容：使用者描述、論文圖片（`assets/fig-*` 等）或論文文字。從論文圖重繪時，先讀圖片再動手。
+- 只是要放論文原圖（不重繪）時，不截圖：依 `guides/paper-report.md` 第 5 節，從 `docs/papers/<id>/` 的原始檔複製圖檔到 `assets/`；沒有原始檔就先請使用者下載。
 
 ## 2. 決定做法
 
 依 `guides/figures.md` 第 2 節的決策表：
 
-1. 主題元件（`flow`、`timeline`、`gantt`、`stat`、`versus`、`mini`、`card`、`callout`、`tag`、`two-col`）能表達的，直接在 `main.typ` 使用，不建立圖檔。
+1. 主題元件（`flow`、`timeline`、`gantt`、`stat`、`versus`、`mini`、`card`、`callout`、`tag`、`two-col`、`equal-row`）能表達的，直接在 `main.typ` 使用，不建立圖檔。
 2. 否則選 fletcher（節點與箭頭）、cetz-plot（資料與函數）或 cetz（自由繪圖），可以和主題元件組合。
 3. 選擇不明顯時，用一句話告訴使用者選了哪個工具、原因是什麼，然後直接做。
 
@@ -44,7 +45,7 @@ just build <id>         # whole deck
 ```
 
 - 兩者都必須成功。除了來自 `theme-academic/.../lib.typ` 的既有字型警告，不能有其他警告。
-- 輸出 PNG 檢查版面：`pdftoppm -r 60 -png out/<id>--<name>.pdf <scratchpad>/<name>`，再用 Read 看圖。確認文字沒有重疊或溢出、圖沒有超出內容區、配色來自主題、跟同份 slide 其他頁的觀感一致。有問題就修改後重新驗證。
+- 輸出 PNG 檢查版面：`pdftoppm -r 60 -png out/<id>--<name>.pdf <scratchpad>/<name>`（整份 slide 用 `just png <id>`），再用 Read 看圖。新主題的 slide 另跑 `just check <id>` 確認放入圖後沒有溢出頁；有溢出時先調整排版或圖的尺寸，不要調整字級（見 `CLAUDE.md`）。確認文字沒有重疊或溢出、圖沒有超出內容區、配色來自主題、跟同份 slide 其他頁的觀感一致。有問題就修改後重新驗證。
 - 編譯錯誤時先查 refs 原始碼中的簽名，不要用猜的反覆嘗試。
 
 ## 6. 回報

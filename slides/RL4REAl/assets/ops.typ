@@ -1,97 +1,75 @@
-#import "@local/theme-academic:0.1.0": card
+#import "@preview/cetz:0.5.2"
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
-#let draw-tree(nodes, edges, w: 70pt) = box(width: w, height: 60pt)[
-  #for e in edges [
-    #place(
-      dx: e.at(0), dy: e.at(1), 
-      line(
-        start: (0pt, 0pt), 
-        end: (e.at(2) - e.at(0), e.at(3) - e.at(1)), 
-        stroke: if e.len() > 4 { e.at(4) } else { 0.8pt + black }
-      )
-    )
-  ]
-  #for n in nodes [
-    #place(
-      dx: n.at(0) - 12pt, 
-      dy: n.at(1) - 12pt, 
-      circle(
-        radius: 12pt, 
-        fill: if n.len() > 3 { n.at(3) } else { white }, 
-        stroke: 0.8pt + black
-      )[#set align(center + horizon); #n.at(2)]
-    )
-  ]
-]
-
-// 定義操作前後的版面配置
-#let operation(before-nodes, before-edges, after-nodes, after-edges, bw: 70pt, aw: 70pt) = align(center)[
-  #stack(
-    dir: ltr,
-    spacing: 10pt,
-    draw-tree(before-nodes, before-edges, w: bw),
-    box(height: 60pt, align(center + horizon)[#text(fill: rgb("#307e71"), size: 14pt)[$->$]]),
-    draw-tree(after-nodes, after-edges, w: aw)
+#let ops(palette: (:), sizes: academic-sizes) = {
+  let p = default-palette + palette
+  set text(size: sizes.small)
+  let r = 0.42
+  let node-style = (stroke: 1.2pt + p.primary, fill: p.primary.lighten(88%))
+  let edge-stroke = 1.2pt + p.text
+  let gone-stroke = (paint: p.muted, thickness: 0.8pt, dash: "dashed")
+  // which LLVM allocators support each operation (Sec. 2.3)
+  let support = (
+    all: (p.muted, [All four]),
+    coalesce: (p.surface, [Greedy, PBQP]),
+    greedy: (p.text, [Greedy only]),
   )
-]
 
-#let ops() = {
-  let ny = (35pt, 15pt, [y])
-  let nx = (15pt, 45pt, [x])
-  let nz = (55pt, 45pt, [z])
-  let base-edges = ((35pt, 15pt, 15pt, 45pt), (35pt, 15pt, 55pt, 45pt))
-  
-  grid(
-    columns: (1fr, 1fr, 1fr, 1fr),
-    column-gutter: 12pt,
-    
-    // 1. Spilling Card
-    card("Spilling", color: rgb("#307e71"))[
-      #operation(
-        (ny, nx, nz), base-edges,
-        (ny, (15pt, 45pt, [M], rgb("#ff3333")), nz), base-edges
-      )
-    ],
+  cetz.canvas(length: 1cm, {
+    import cetz.draw: *
 
-    // 2. Splitting Card
-    card("Splitting", color: rgb("#307e71"))[
-      #let w-ny = (40pt, 15pt, [y])
-      #let nx1 = (15pt, 45pt, [$x_1$])
-      #let nx2 = (40pt, 45pt, [$x_2$])
-      #let w-nz = (65pt, 45pt, [z])
-      #operation(
-        (ny, nx, nz), base-edges,
-        (w-ny, nx1, nx2, w-nz), 
-        (
-          (40pt, 15pt, 15pt, 45pt), 
-          (40pt, 15pt, 40pt, 45pt, (paint: blue.lighten(30%), dash: "dotted", thickness: 0.8pt)), // 虛線
-          (40pt, 15pt, 65pt, 45pt)
-        ),
-        aw: 80pt
-      )
-    ],
+    let vertex(pos, label, style: node-style) = {
+      circle(pos, radius: r, ..style, name: "v")
+      content("v", label)
+    }
+    let link(a, b, s: edge-stroke) = line(a, b, stroke: s)
+    let move(a, b, ctrl, label: none, anchor: "south", color: p.text) = {
+      bezier(a, b, ctrl, stroke: 1.2pt + color, mark: (end: "stealth", fill: color), name: "m")
+      content("m.mid", anchor: anchor, padding: 0.1, text(fill: color, label))
+    }
+    // interference triangle y-x-z centered at cx
+    let triangle(cx, x-style: node-style, x-stroke: edge-stroke) = {
+      link((cx, 1.2), (cx - 0.75, 0), s: x-stroke)
+      link((cx - 0.75, 0), (cx + 0.75, 0), s: x-stroke)
+      link((cx, 1.2), (cx + 0.75, 0))
+      vertex((cx, 1.2), [$y$])
+      vertex((cx - 0.75, 0), [$x$], style: x-style)
+      vertex((cx + 0.75, 0), [$z$])
+    }
 
-    // 3. Coalescing Card
-    card("Coalescing", color: rgb("#307e71"))[
-      #let w-ny = (40pt, 15pt, [y])
-      #let nx1 = (15pt, 45pt, [$x_1$])
-      #let nx2 = (40pt, 45pt, [$x_2$])
-      #let w-nz = (65pt, 45pt, [z])
-      #operation(
-        (w-ny, nx1, nx2, w-nz), 
-        ((40pt, 15pt, 15pt, 45pt), (40pt, 15pt, 40pt, 45pt), (40pt, 15pt, 65pt, 45pt)),
-        ((40pt, 15pt, [y]), (25pt, 45pt, [x]), (55pt, 45pt, [z])), 
-        ((40pt, 15pt, 25pt, 45pt), (40pt, 15pt, 55pt, 45pt)),
-        bw: 80pt, aw: 70pt
-      )
-    ],
+    // after coloring x
+    triangle(1.0, x-style: (stroke: 1.2pt + p.accent, fill: p.accent.lighten(85%)))
 
-    // 4. Eviction Card
-    card("Eviction", color: rgb("#307e71"))[
-      #operation(
-        (ny, (15pt, 45pt, text(0.9em)[R1], rgb("#9bbca3")), nz), base-edges,
-        (ny, nx, nz), base-edges
-      )
-    ]
-  )
+    // original interference graph
+    triangle(5.6)
+
+    // after splitting y into y', y''
+    link((9.9, 1.2), (9.9, 0))
+    link((11.5, 1.2), (11.5, 0))
+    link((9.9, 0), (11.5, 0))
+    link((9.9, 1.2), (11.5, 1.2), s: gone-stroke)
+    vertex((9.9, 1.2), [$y'$])
+    vertex((11.5, 1.2), [$y''$])
+    vertex((9.9, 0), [$x$])
+    vertex((11.5, 0), [$z$])
+
+    // after spilling x to memory
+    rect((12.45, -1.0), (14.45, 0.55), stroke: 1.2pt + p.muted, fill: p.muted.lighten(88%), name: "mem")
+    content("mem.south", anchor: "south", padding: 0.06, text(fill: p.muted)[memory])
+    triangle(14.2, x-style: (stroke: 1.2pt + p.muted, fill: p.muted.lighten(80%)), x-stroke: gone-stroke)
+
+    // operations
+    move((4.25, 1.0), (2.35, 1.0), (3.3, 1.45), label: [coloring], color: support.all.at(0))
+    move((2.35, 0.2), (4.25, 0.2), (3.3, -0.25), label: [eviction], anchor: "north", color: support.greedy.at(0))
+    move((6.95, 1.0), (9.45, 1.0), (8.2, 1.45), label: [splitting], color: support.greedy.at(0))
+    move((9.45, 0.2), (6.95, 0.2), (8.2, -0.25), label: [coalescing], anchor: "north", color: support.coalesce.at(0))
+    move((5.9, 1.9), (13.9, 1.9), (9.9, 3.9), label: [spilling], color: support.all.at(0))
+
+    // legend
+    for (i, (color, label)) in support.values().enumerate() {
+      let y0 = 3.3 - i * 0.55
+      line((-0.2, y0), (0.4, y0), stroke: 1.2pt + color)
+      content((0.55, y0), anchor: "west", text(fill: color, label))
+    }
+  })
 }

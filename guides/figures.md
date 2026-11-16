@@ -26,7 +26,7 @@
 
 | 需求                                   | 用法                                                                |
 | -------------------------------------- | ------------------------------------------------------------------- |
-| 線性的步驟 / pipeline 階段（可分兩區） | `flow(((title, sub), ...), split: n, zone-a: "...", zone-b: "...")` |
+| 線性的步驟 / pipeline 階段（可分兩區） | `flow(((title, sub), ...), split: n, zone-a: "...", zone-b: "...")`；階段寫成 `(title, sub, color)` 可個別指定顏色（slide-kit 0.1.2 起） |
 | 年代、里程碑                           | `timeline(items: ((year: [..], title: [..], desc: [..]), ...))`     |
 | 排程                                   | `gantt(rows, total: 16, mid: 8)`                                    |
 | 重點數字                               | `stat(value, label, note: ..)`                                      |
@@ -34,6 +34,8 @@
 | 字母編號的條列方塊                     | `mini(letter, name)[說明]`                                          |
 | 含標題的方塊 / 註解框 / 小標籤         | `card(head)[..]`、`callout(title: .., kind: ..)[..]`、`tag[..]`     |
 | 左右分欄                               | `two-col(ratio: (1fr, 1fr))[左][右]`                                |
+| 並排方塊取相同高度                     | `equal-row(columns: (1fr, 1fr), h => card(.., height: h)[..], ..)`（theme-academic 0.1.2 / 0.2.1 起） |
+| 灰色補充說明、結果表最佳 / 次佳        | `note[..]`、`best[..]`、`second[..]`（theme-academic 0.1.2 / 0.2.1 起） |
 
 上面都不適用時，依圖形性質選工具：
 
@@ -72,11 +74,12 @@
 
 規則：
 
+- **主題版本與 `main.typ` 相同**：上例以 0.1.0 示範；slide 用 0.1.0 以外的版本時（例如 `slide` 模板的 0.1.2、`compact` 模板的 0.2.1），圖檔也改 import 相同版本，各版的 `default-palette`、`academic-sizes` 與元件相同。
 - **主題名稱一律具名 import**（`default-palette`、`academic-sizes`、`main-palette`、`card` 等），不要 `#import "@local/theme-academic:0.1.0": *`。
 - **入口函式的參數沿用主題慣例**：`palette: (:)` 與 `sizes: academic-sizes`，函式內用 `let p = default-palette + palette`。需要可調的內容（資料、標籤）也做成參數。
 - **檔案頂層只放 import 與 `#let`**。不要有頂層的 `#set`、`#show`、可見內容或測試呼叫；樣式設定寫在函式內，只作用於該圖。
 - **不要設定字型**，沿用 `deck` 的字型；只用 `sizes` 設定字級。
-- slide 使用的主題不是 `theme-academic` 時（例如 `theme-basic` 沒有 palette），改從 `@local/slide-kit:0.1.1` 匯入 `default-palette`、`default-sizes`。
+- slide 使用的主題不是 `theme-academic` 時（例如 `theme-basic` 沒有 palette），改從 `@local/slide-kit:0.1.2` 匯入 `default-palette`、`default-sizes`。
 
 ### 主文件引用
 

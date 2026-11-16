@@ -6,29 +6,43 @@
 
 ```
 .
-├─ packages/local/                 # Typst packages，結構為 <namespace>/<name>/<version>/
+├─ packages/local/                 # Typst packages，結構為 <name>/<version>/，以 @local/<name>:<version> 引用
 │  ├─ slide-kit/
 │  │  ├─ 0.1.0/                    # callout、code-block（theme-basic 使用）
-│  │  └─ 0.1.1/                    # callout、card、gantt、stat、tag、timeline、flow 等
+│  │  ├─ 0.1.1/                    # callout、card、gantt、stat、tag、timeline、flow 等
+│  │  └─ 0.1.2/                    # 0.1.1 + note / best / second、equal-row 等
 │  │     ├─ typst.toml
 │  │     ├─ lib.typ                # 只 re-export 公開 API
 │  │     └─ src/                   # 內部實作
-│  ├─ theme-academic/0.1.0/        # 論文報告模板（依賴 slide-kit 0.1.1），目前 slides 皆使用
-│  └─ theme-basic/0.1.0/           # 簡易模板（依賴 slide-kit 0.1.0）
-├─ templates/slide/                # `just new` 使用的 main.typ / meta.toml 範本
+│  ├─ theme-academic/              # 論文報告主題；各版本差異見 CLAUDE.md
+│  │  ├─ 0.1.0/ 0.1.1/ 0.1.2/      # section-slide 分隔頁（0.1.2 依賴 slide-kit 0.1.2）
+│  │  └─ 0.2.0/ 0.2.1/             # #section[...] 不產生新頁（0.2.1 依賴 slide-kit 0.1.2）
+│  └─ theme-basic/0.1.0/           # 簡易主題（依賴 slide-kit 0.1.0）
+├─ templates/
+│  ├─ slide/                       # `just new` 預設模板（theme-academic 0.1.2）
+│  └─ compact/                     # `just new <id> compact`，有頁數上限的課程報告（theme-academic 0.2.1）
 ├─ slides/
 │  ├─ example/                     # 元件展示範例
-│  └─ <slide-id>/                  # 每份 slide 一個資料夾（例如 SPAGD、RL4REAl、scanRL）
+│  └─ <slide-id>/                  # 每份 slide 一個資料夾（例如 SPAGD、RL4REAl、AlphaDev）
 │     ├─ main.typ
+│     ├─ appendix.typ              # 選用，附錄頁
 │     ├─ meta.toml                 # 標題、日期、標籤等 metadata
 │     ├─ refs.bib                  # 參考文獻，`just fill` 也從這裡讀取論文資訊
-│     └─ assets/                   # 該 slide 專用的圖片等資源
+│     └─ assets/                   # 該 slide 專用的圖檔（論文原圖、<name>.typ 自繪圖）
+├─ batches/<name>.txt              # batch release 的 slide 清單（每行一個 slide id）
+├─ guides/
+│  ├─ paper-report.md              # 論文報告簡報指南
+│  ├─ figures.md                   # 圖形繪製指南（cetz / cetz-plot / fletcher）
+│  └─ courses/                     # 各課程作業的頁面配置與寫法慣例
 ├─ fonts/                          # 字型（CI 與本機一致，避免缺字）
 ├─ scripts/
 │  ├─ build-index.py               # 掃描 meta.toml 產生索引
-│  └─ fill_slide_meta.py           # 從 refs.bib 填入 slide 的標題、作者等資訊
-├─ docs/                           # 索引輸出（index.md / index.json，不進版控）
-├─ justfile                        # build / watch / new / fill 指令
+│  ├─ fill_slide_meta.py           # 從 refs.bib 填入 slide 的標題、作者等資訊
+│  └─ export-slide.py              # `just export`：匯出最小可編譯專案
+├─ docs/                           # 不進版控：索引輸出、課程規範、論文原始檔、套件參考文件
+├─ .claude/skills/                 # Claude Code skills（new-slide、slide-figure）
+├─ CLAUDE.md                       # 給 Claude Code 的專案說明（架構、版本、規範）
+├─ justfile                        # build / watch / new / fill / fig / png / check / export
 └─ .github/workflows/release.yaml  # 推送 tag 時編譯並發佈
 ```
 
@@ -46,10 +60,10 @@ Typst 不支援從 git repo 取得依賴，套件來源只有 Typst Universe、`
 
 ```typst
 // 模板引用共用元件（版本寫死，確保可重現）
-#import "@local/slide-kit:0.1.1" as kit
+#import "@local/slide-kit:0.1.2" as kit
 
 // slide 引用模板
-#import "@local/theme-academic:0.1.0": *
+#import "@local/theme-academic:0.2.1": *
 ```
 
 好處：
@@ -62,18 +76,21 @@ Typst 不支援從 git repo 取得依賴，套件來源只有 Typst Universe、`
 
 Git tag 是整個 repo 共用的名稱，不屬於某個資料夾，所以：
 
-- **Tag**：用帶前綴的命名觸發個別 slide 的 release，格式為 `slides/<slide-id>/v<major>.<minor>.<patch>`，例如 `slides/SPAGD/v1.0.0`。
+- **Tag**：用帶前綴的命名觸發個別 slide 的 release，格式為 `slides/<slide-id>/v<major>.<minor>.<patch>`，例如 `slides/SPAGD/v1.0.0`；多份 slide 一起發佈時用 `batch/<name>`（見[發佈 release](#發佈-release)）。
 - **分類**：寫在每份 slide 的 `meta.toml`，由腳本產生索引。GitHub Topics 只能標示整個 repo，不適合用來分類個別 slide。
 
 ## 使用方式
 
 ### 新增一份 slide
 
-1. 建立 slide 資料夾（從 `templates/slide/` 複製，`meta.toml` 的日期自動填今天）：
+1. 建立 slide 資料夾（從 `templates/<template>/` 複製，`meta.toml` 的日期自動填今天）：
 
    ```bash
-   just new <slide-id>
+   just new <slide-id>           # templates/slide，一般論文報告（theme-academic 0.1.2）
+   just new <slide-id> compact   # templates/compact，有頁數上限的課程報告（theme-academic 0.2.1）
    ```
+
+   論文報告的內容與頁面規範見 `guides/paper-report.md`；課程作業另見 `guides/courses/`。
 
 2. 把論文的 BibTeX 貼進 `slides/<slide-id>/refs.bib`，再自動填入標題、作者、venue 與年份：
 
@@ -87,14 +104,15 @@ Git tag 是整個 repo 共用的名稱，不屬於某個資料夾，所以：
 3. 在 `main.typ` 撰寫內容（`theme-academic`）：
 
    ```typst
-   #section-slide[Introduction]
+   #section-slide[Introduction]    // 0.1.x：產生章節分隔頁
+   #section[Introduction]          // 0.2.x：不產生新頁，標在下一張 slide 的標題上方
 
    #slide[第一頁標題][
      內容
    ]
    ```
 
-   可用元件（`callout`、`card`、`stat`、`tag`、`timeline`、`gantt`、`flow`、`mini`、`versus`、`two-col`）定義於 `packages/local/theme-academic/0.1.0/lib.typ`；`slides/example/main.typ` 有部分元件的使用範例。圖表可另外引用 Universe 套件，例如 `@preview/cetz:0.5.2`、`@preview/cetz-plot:0.1.4`，首次編譯時 Typst 會自動下載。
+   可用元件（`callout`、`card`、`stat`、`tag`、`timeline`、`gantt`、`flow`、`mini`、`versus`、`two-col`、`equal-row`、`note` 等）定義於 `packages/local/theme-academic/<version>/lib.typ`，各版本差異見 `CLAUDE.md`；`slides/example/main.typ` 有部分元件的使用範例。圖表可另外引用 Universe 套件（`@preview/cetz:0.5.2`、`@preview/cetz-plot:0.1.4`、`@preview/fletcher:0.5.8`），首次編譯時 Typst 會自動下載；繪圖規範見 `guides/figures.md`。
 
 ### `meta.toml` 欄位
 
@@ -130,6 +148,15 @@ just build example
 just watch example
 ```
 
+其他檢查與輸出：
+
+```bash
+just fig <slide> <name>   # 單獨預覽 slides/<slide>/assets/<name>.typ -> out/<slide>--<name>.pdf
+just png <slide> [ppi]    # 每頁轉成 PNG -> out/<slide>-png/
+just check <slide>        # 列出內容溢出的頁面（theme-academic 0.1.2 / 0.2.1 以上）
+just export <slide>       # 匯出最小可編譯專案 -> out/<slide>.zip
+```
+
 ### 發佈 release
 
 ```bash
@@ -138,6 +165,17 @@ git push origin slides/example/v1.0.0
 ```
 
 推送符合 `slides/*/v*` 的 tag 後，workflow 會以 tag 中的 slide id 編譯 `slides/<id>/main.typ`，並把 PDF 附加到對應的 GitHub Release。
+
+一次發佈多份 slide 到同一個 Release 時，在 `batches/<name>.txt` 列出 slide id（每行一個，`#` 之後為註解），commit 後推送 `batch/<name>` tag：
+
+```bash
+printf 'AlphaDev\nRL4REAl\n' > batches/w2.txt
+git add batches/w2.txt && git commit -m "chore: add w2 batch"
+git tag batch/w2
+git push origin batch/w2
+```
+
+workflow 會依序編譯清單中的 slide，全部 PDF 附加到 `batch/w2` 這個 Release。`build-index.py` 只看 `slides/<id>/v*` tag，batch release 不會出現在索引的下載連結中。
 
 ### 產生索引
 
@@ -154,9 +192,9 @@ python3 scripts/build-index.py --include-draft  # 包含草稿
 ## 維護注意事項
 
 - **固定 Typst 版本**：workflow 固定使用 Typst `0.15.1`，升級前請先確認舊 slide 的編譯結果沒有改變。各 package `typst.toml` 的 `compiler` 欄位（目前為 `0.13.0`）為最低版本需求，請依實際使用版本調整。
-- **字型**：`theme-academic` 使用 Times New Roman / Tinos / Liberation Serif 與 Noto Serif/Sans CJK TC 等字型清單，這些字型不在 `fonts/` 內，會從系統字型中依序尋找；`theme-basic` 使用 `fonts/` 內的教育部標準楷書。新增字型到 `fonts/` 前請確認授權允許放進公開 repo。
+- **字型**：`theme-academic` 內文使用 Times New Roman / Tinos / Liberation Serif 與 Noto Serif CJK TC 等字型清單，標題列與頁尾使用 Tw Cen MT / Noto Sans CJK TC 等，這些字型不在 `fonts/` 內，會從系統字型中依序尋找；`theme-basic` 使用 `fonts/` 內的教育部標準楷書。新增字型到 `fonts/` 前請確認授權允許放進公開 repo。
 - **大型資產**：圖片、影片過大時請使用 Git LFS，或避免放入 repo。
-- **元件破壞性改動**：複製成新版本資料夾（如 `slide-kit/0.1.0` → `0.1.1`），更新需要的模板 import，舊 slide 不必動。
+- **元件破壞性改動**：複製成新版本資料夾（如 `slide-kit/0.1.0` → `0.1.1`），更新需要的模板 import，舊 slide 不必動。只新增元件時可直接改既有版本，改完重新編譯引用它的 slide。
 - **發佈到 Universe**：各 `typst.toml` 已填妥作者、`license`、`description` 與 `repository`，發佈時只需把 import 的 `@local` 改成 `@preview`。
 
 ## 字型與授權

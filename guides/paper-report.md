@@ -29,7 +29,7 @@
 
 ### 預留頁面格式
 
-報告者要自己寫的頁面，一律用以下格式預留，方便 `grep -n TODO slides/<id>/main.typ` 找出：
+報告者要自己寫的頁面，一律用以下格式預留，方便 `grep -n "TODO\|todo-slide" slides/<id>/main.typ` 找出。theme-academic 0.1.2 / 0.2.1 以上用 `#todo-slide[Why This Paper]`，效果相同；舊版本主題用：
 
 ```typ
 #slide[Why This Paper][
@@ -68,11 +68,17 @@
 ## 5. 圖
 
 - 自己畫的圖依 `guides/figures.md`，放在 `slides/<id>/assets/<name>.typ`。
-- 論文原圖：從 `docs/papers/<id>.pdf` 以 300 dpi 截取，存成 `slides/<id>/assets/fig-<論文圖號>.png`，並在 caption 註明來源。
+- 論文原圖：不要從論文 PDF 截圖（投影時會糊）。改用論文公開的原始圖檔：
+  - 先請使用者下載論文的原始檔（arXiv 的「TeX Source」，或作者公開的 repo / 專案頁），解壓到 `docs/papers/<id>/`。
+  - 在 `.tex` 中找 `\includegraphics` 對應到論文圖號的檔案（注意 `page=`、子圖 `(a)`/`(b)` 由多個檔案拼成的情況）。
+  - 複製到 `slides/<id>/assets/fig-<論文圖號>.<原副檔名>`（子圖用 `fig-3a`、`fig-3b`），不要引用 `docs/papers/` 的路徑或絕對路徑。PDF 直接用 `image("assets/fig-1.pdf")` 嵌入向量圖，多頁 PDF 加 `page:`；子圖用 `grid` 並排並補上 `(a) ...` 標籤。
+  - 不修改圖檔內容（不轉檔、不重新點陣化）；caption 註明來源。
+  - 只有使用者明確表示找不到原始圖檔時，才從 `docs/papers/<id>.pdf` 以 300 dpi 截取，存成 `slides/<id>/assets/fig-<論文圖號>.png`。
+- 論文中的表格（LaTeX `tabular`）沒有圖檔：在 slide 中用 Typst `table` 重新排版，數值不改；同樣不要截圖。
 - 原圖已經畫好整體架構時，不要重畫；自己畫的圖用來解釋原圖沒講清楚的機制（例如某個模組內部如何運作）。
 
 ## 6. 協作規則
 
 - 使用者說明哪些部分已完成或不要修改時，那些部分不做任何更動（包含拼字修正、排版調整）；有建議就在對話中列出。
-- 完成後 `just build <id>` 必須成功，並轉成 PNG 逐頁檢查版面：文字不超出頁面、圖不重疊。
+- 完成後 `just build <id>` 必須成功，`just check <id>` 不能有溢出頁（新主題；處理方式依 `CLAUDE.md`，不調整字級），並用 `just png <id>` 轉成 PNG 逐頁檢查版面：文字不超出頁面、圖不重疊。
 - 回報時附上每段的頁數與預估時間，並列出所有 `TODO` 頁面。
