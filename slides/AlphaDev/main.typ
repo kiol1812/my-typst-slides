@@ -21,23 +21,13 @@
 #let note(body) = text(size: 15pt, fill: palette.muted, body)
 #let src(body) = [Source: Mankowitz et al. (Nature 2023), #body]
 #let eq(n, e) = math.equation(block: true, numbering: (..) => [(#n)], e.body)
-// Items are functions of a height; every item in the row gets the tallest natural height.
-#let equal-row(columns: (), gutter: 14pt, ..items) = layout(size => {
-  let items = items.pos()
-  let autos = columns.zip(items).map(((c, it)) => if c == auto { measure(it(auto)).width } else { 0pt })
-  let fr-total = columns.filter(c => type(c) == fraction).map(c => c / 1fr).sum(default: 0)
-  let free = size.width - gutter * (items.len() - 1) - autos.sum()
-  let widths = columns.zip(autos).map(((c, a)) => if c == auto { a } else { free * (c / 1fr) / fr-total })
-  let h = calc.max(..items.zip(widths).map(((it, w)) => measure(it(auto), width: w).height))
-  grid(columns: widths, column-gutter: gutter, ..items.map(it => it(h)))
-})
 
 // ───────── 封面 ─────────
 #title-slide(
   title: title-text,
   authors: text(size: 16pt)[Daniel~J.~Mankowitz#super[1,3], Andrea~Michi#super[1,3], Anton~Zhernov#super[1,3], Marco~Gelmi#super[1,3], Marco~Selvi#super[1,3], Cosmin~Paduraru#super[1,3], Edouard~Leurent#super[1,3], Shariq~Iqbal#super[1], Jean-Baptiste~Lespiau#super[1], Alex~Ahern#super[1], Thomas~Köppe#super[1], Kevin~Millikin#super[1], Stephen~Gaffney#super[1], Sophie~Elster#super[1], Jackson~Broshear#super[1], Chris~Gamble#super[1], Kieran~Milan#super[1], Robert~Tung#super[1], Minjae~Hwang#super[2], Taylan~Cemgil#super[1], Mohammadamin~Barekatain#super[1], Yujia~Li#super[1], Amol~Mandhane#super[1], Thomas~Hubert#super[1], Julian~Schrittwieser#super[1], Demis~Hassabis#super[1], Pushmeet~Kohli#super[1], Martin~Riedmiller#super[1], Oriol~Vinyals#super[1], David~Silver#super[1]],
   affiliations: [#super[1]DeepMind, London, UK #h(1em) #super[2]Google, Mountain View, CA, USA #h(1em) #super[3]Equal contribution],
-  venue: [Nature, Vol. 618, pp. 257–263 (2023), open-access journal version],
+  venue: [Nature, Vol. 618, pp. 257–263 (2023)],
   year: [],
   presenters: ([11557028 楊育哲]),
   date: [2026/11/18],
@@ -172,61 +162,76 @@
 
 #section[Evidence]
 
-#slide(source: src[p. 259, Table 1a, Figure 3a–c (re-typeset, highlights unchanged; network self-drawn); Methods: Fixed sort; Extended Data Table 2])[Evidence: Fixed Sort][
-  #set text(size: 15pt)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 14pt,
-    align: top,
-    {
-      set figure(supplement: "Table")
-      figure(
-        kind: table,
-        table(
-          columns: (auto, 1fr),
-          align: (left + horizon, left + horizon),
-          stroke: none,
-          inset: (x: 6pt, y: 2.5pt),
-          fill: (_, y) => if y == 0 { palette.text } else if calc.even(y) { palette.text.lighten(93%) },
-          table.hline(stroke: 0.8pt + palette.text),
-          [*Setup*], [],
-          [*Task*], [Sort 3 / 4 / 5, branchless],
-          [*Baseline*], [Human sorting networks; AlphaDev-S],
-          [*Same*], [Instructions, pruning, correctness check],
-          [*Metric*], [Program length, lower is better],
-          table.hline(stroke: 0.8pt + palette.text),
-        ),
-        caption: hide[Setup],
-      )
-    },
-    {
-      set figure(supplement: "Table")
-      figure(
-        kind: table,
-        table(
-          columns: (auto, 1fr, 1fr, 1fr),
-          align: (left + horizon,) + (center + horizon,) * 3,
-          stroke: none,
-          inset: (x: 6pt, y: 2.5pt),
-          fill: (_, y) => if y == 0 { palette.text },
-          table.hline(stroke: 0.8pt + palette.text),
-          [], [*Sort 3*], [*Sort 4*], [*Sort 5*],
-          [Length: human], [18], [28], [46],
-          [Length: AlphaDev], [*17*], [*28*], [*42*],
-          [Length: S-WS / S-CS], [17 / N/S], [28 / N/S], [42 / N/S],
-          table.hline(stroke: 0.6pt + palette.muted),
-          [\# programs: AlphaDev], [446K], [1.3M], [6.23M],
-          [\# programs: S-WS], [51.7M], [338K], [170B],
-          [\# programs: S-CS], [77.5B], [325B], [1.9T],
-          table.hline(stroke: 0.8pt + palette.text),
-        ),
-        caption: [Length and programs explored (Table 1a)],
-      )
-    },
+#slide(source: src[p. 259 (Fixed sorting algorithms); Figure 3a–c (network self-drawn); Methods: AlphaDev-S, Fixed sort, p. 261])[Evidence (1): Setup of Fixed Sort][
+  #set text(size: 16pt)
+  #table(
+    columns: (auto, 1fr),
+    align: (left + horizon, left + horizon),
+    stroke: none,
+    inset: (x: 8pt, y: 3pt),
+    fill: (_, y) => if y == 0 { palette.text } else if calc.even(y) { palette.text.lighten(93%) },
+    table.hline(stroke: 0.8pt + palette.text),
+    [*Term*], [*Description*],
+    [*Claim*], [Shorter fixed sorts than human benchmarks, found from scratch],
+    [*Task / data*], [Sort 3 / 4 / 5, branchless (`cmp` + `cmov` only)],
+    [*Model*], [AlphaDev: AlphaZero MCTS + Transformer and CPU-state encoders],
+    [*Compared*], [Human sorting networks (libc++); AlphaDev-S-CS (cold start: empty program); AlphaDev-S-WS (warm start: near-optimal program)],
+    [*Same*], [Instruction set, action pruning, correctness check; AlphaDev-S given $>=$ same compute and wall-clock time],
+    [*Changed*], [Search method and starting program],
+    [*Metric*], [Program length, lower is better #note[length $approx$ latency when branchless]],
+    table.hline(stroke: 0.8pt + palette.text),
   )
   #figure(
     swap-move(),
     caption: [Sort 3: swap move removes one instruction (Figure 3a–c)],
+  )
+]
+
+#slide(source: src[Table 1a, p. 259; Extended Data Table 2a–c (values unchanged); Methods: Fixed sort, p. 261; Supplementary Information, Appendix B])[Evidence (2): Reading Fixed Sort][
+  #set text(size: 15pt)
+  #grid(
+    columns: (1.1fr, 1fr),
+    column-gutter: 14pt,
+    align: horizon,
+    {
+      set figure(supplement: "Table")
+      figure(
+        kind: table,
+        {
+          table(
+            columns: (auto, 1fr, 1fr, 1fr),
+            align: (left + horizon,) + (center + horizon,) * 3,
+            stroke: none,
+            inset: (x: 6pt, y: 2.5pt),
+            fill: (_, y) => if y == 0 { palette.text },
+            table.hline(stroke: 0.8pt + palette.text),
+            [], [*Sort 3*], [*Sort 4*], [*Sort 5*],
+            [Length: human], [18], [28], [46],
+            [Length: AlphaDev], [*17*], [*28*], [*42*],
+            [Length: S-WS / S-CS], [17 / N/S], [28 / N/S], [42 / N/S],
+            table.hline(stroke: 0.6pt + palette.muted),
+            [\# programs: AlphaDev], [446K], [1.3M], [6.23M],
+            [\# programs: S-WS], [51.7M], [338K], [170B],
+            [\# programs: S-CS], [77.5B], [325B], [1.9T],
+            table.hline(stroke: 0.8pt + palette.text),
+          )
+          note[N/S: no sorting program found]
+        },
+        caption: [Length and programs explored (Table 1a; Extended Data Table 2a–b)],
+      )
+    },
+    {
+      card([Reading])[
+        Length vs. human: sort 3 $18 -> 17$, sort 4 tie (28), sort 5 $46 -> 42$ \
+        S-WS matches AlphaDev; S-CS finds no sorting program \
+        Programs explored: fewer than S-WS on sort 3 / 5, more on sort 4 (1.3M vs. 338K)
+      ]
+      card([Support range])[
+        *Supports*: shorter branchless sort 3 / 5 without a starting program \
+        *Cannot infer*: latency gain (length is the objective here; Supp. App. B) \
+        *Cannot infer*: edge over warm-started search (S-WS ties, less wall-clock; ED Table 2c)
+      ]
+    },
   )
 ]
 

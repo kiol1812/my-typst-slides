@@ -23,16 +23,6 @@
 #let dim(body) = text(fill: palette.primary, body)
 #let src(body) = [Source: Khalil et al. (NIPS 2017), #body]
 #let eq(n, e) = math.equation(block: true, numbering: (..) => [(#n)], e.body)
-// Items are functions of a height; every item in the row gets the tallest natural height.
-#let equal-row(columns: (), gutter: 14pt, ..items) = layout(size => {
-  let items = items.pos()
-  let autos = columns.zip(items).map(((c, it)) => if c == auto { measure(it(auto)).width } else { 0pt })
-  let fr-total = columns.filter(c => type(c) == fraction).map(c => c / 1fr).sum(default: 0)
-  let free = size.width - gutter * (items.len() - 1) - autos.sum()
-  let widths = columns.zip(autos).map(((c, a)) => if c == auto { a } else { free * (c / 1fr) / fr-total })
-  let h = calc.max(..items.zip(widths).map(((it, w)) => measure(it(auto), width: w).height))
-  grid(columns: widths, column-gutter: gutter, ..items.map(it => it(h)))
-})
 
 // ───────── 封面 ─────────
 #title-slide(

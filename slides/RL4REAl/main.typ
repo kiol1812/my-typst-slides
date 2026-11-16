@@ -20,16 +20,6 @@
 
 #let note(body) = text(size: 15pt, fill: palette.muted, body)
 #let src(body) = [Source: VenkataKeerthy et al. (CC 2023), #body]
-// Items are functions of a height; every item in the row gets the tallest natural height.
-#let equal-row(columns: (), gutter: 14pt, ..items) = layout(size => {
-  let items = items.pos()
-  let autos = columns.zip(items).map(((c, it)) => if c == auto { measure(it(auto)).width } else { 0pt })
-  let fr-total = columns.filter(c => type(c) == fraction).map(c => c / 1fr).sum(default: 0)
-  let free = size.width - gutter * (items.len() - 1) - autos.sum()
-  let widths = columns.zip(autos).map(((c, a)) => if c == auto { a } else { free * (c / 1fr) / fr-total })
-  let h = calc.max(..items.zip(widths).map(((it, w)) => measure(it(auto), width: w).height))
-  grid(columns: widths, column-gutter: gutter, ..items.map(it => it(h)))
-})
 
 // ───────── 封面 ─────────
 #title-slide(
@@ -255,7 +245,7 @@
     inset: (x: 8pt, y: 3pt),
     fill: (_, y) => if y == 0 { palette.text } else if calc.even(y) { palette.text.lighten(93%) },
     table.hline(stroke: 0.8pt + palette.text),
-    [*Question*], [*Answer from the paper*],
+    [*Term*], [*Description*],
     [*Claim*], [Learned allocator on par with LLVM's tuned allocators in runtime],
     [*Task / data*], [SPEC CPU 2006 + 2017, C/C++ $<$ 1 MLOC; 18 benchmarks compiled #note[4 compile, 4 runtime errors excluded]],
     [*Model*], [Four FC agents + GGNN states; PPO, standard hyperparameters, until reward converges],
