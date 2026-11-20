@@ -1,5 +1,5 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 #let st-detector(palette: (:), sizes: academic-sizes) = {
   let p = default-palette + palette

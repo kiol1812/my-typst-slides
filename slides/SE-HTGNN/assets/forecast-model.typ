@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 // Forecasting model F: gamma snapshots in, beta predictions out.
 // detail: true opens F up into SE-HTGNN's modules and highlights the linear project.

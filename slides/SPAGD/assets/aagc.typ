@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 // Example values follow Eq. (3)-(6) with K = 2, m = 40%, phi = Sigmoid,
 // and self-loops excluded from top-K (GAT adds them via N(i) ∪ {i}).

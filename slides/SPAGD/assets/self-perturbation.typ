@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": plot
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
 
 #let _signal(x) = 0.6 * calc.sin(1.3 * x) + 0.3 * calc.sin(3.1 * x)
 

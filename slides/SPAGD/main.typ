@@ -1,4 +1,4 @@
-#import "@local/theme-academic:0.1.0": *
+#import "@local/theme-academic:0.2.1": *
 #import "@preview/cetz:0.5.2"
 
 #import "assets/static-correlation.typ": static-correlation
@@ -12,29 +12,20 @@
 
 #let title-text = "Self-Perturbed Anomaly-Aware Graph Dynamics for Multivariate Time-Series Anomaly Detection"
 
-#show: deck.with(footer: title-text)
-
-#let palette = default-palette + (:)
-
-#set figure(supplement: "Figure")
-#show table: set text(size: 16pt)
-#show footnote.entry: set text(size: 16pt)
-#show list: set block(above: 0.65em, below: 0.65em)
+#show: deck.with(footer: [SPAGD (Cai et al., NeurIPS 2025)])
 
 // ───────── 封面 ─────────
 #title-slide(
   title: title-text,
-  authors: [Jinyu Cai, Yuan Xie, Glynnis Lim, Yifang Yin, Roger Zimmermann, See-Kiong Ng],
-  venue: [NeurIPS],
-  year: [2025],
+  authors: [Jinyu Cai#super[1], Yuan Xie#super[2\*], Glynnis Lim#super[1], Yifang Yin#super[3], Roger Zimmermann#super[2], See-Kiong Ng#super[1]],
+  affiliations: [#super[1]Institute of Data Science, NUS #h(1em) #super[2]School of Computing, NUS #h(1em) #super[3]Institute for Infocomm Research, A\*STAR, Singapore #h(1em) #super[\*]Corresponding author],
+  venue: [NeurIPS 2025 (39th Conference on Neural Information Processing Systems)],
+  year: [],
   presenters: ([11557028 楊育哲]),
   date: [2026/10/21],
 )
 
-// ───────── Outline ─────────
-#outline-slide()
-
-#section-slide[Introduction]
+#section[Introduction]
 
 #slide[Problem Definition][
   #show table.cell: set text(size: 20pt)
@@ -96,7 +87,7 @@
   ]
 ]
 
-#section-slide[Methodology]
+#section[Methodology]
 
 #slide[Problem Formulation][
   - *Input Data:* Time series $bold(X)$ with $T$ steps and $d$ features
@@ -147,8 +138,8 @@
 
 #slide[Self-Perturbed Anomaly-Aware Graph Dynamics][
   #figure(
-    image("assets/fig-1.png", width: 80%),
-    caption: [An illustration of the proposed SPAGD framework (Source: Jinyu Cai et al. 2025 @cai2025)]
+    image("assets/fig-1.png", width: 72%),
+    caption: [An illustration of the proposed SPAGD framework (Source: Jinyu Cai et al. 2025)]
   )
 ]
 
@@ -167,7 +158,6 @@
 
 #slide(subtitle: [Problem 2: static correlations])[Anomaly-Aware Graph Construction][
   #align(center, aagc())
-  #set text(size: 22pt)
   - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$
   - Top-$m%$ $->$ candidates $cal(M)$
   - Boost edges touching $cal(M)$, then keep top-$K$:
@@ -187,11 +177,10 @@
     $
 ]
 
-#section-slide[Experiments]
+#section[Experiments]
 
 #slide[Setup][
   #show table.cell: set text(size: 20pt)
-  #set figure(supplement: "Table")
   #figure(
     kind: table,
     table(
@@ -202,7 +191,7 @@
       [Soil Moisture Active Passive (SMAP)], [Spacecraft telemetry], [25], [135,183], [427,617], [13.13%],
       [Mars Science Laboratory (MSL)], [Spacecraft telemetry], [55], [58,317], [73,729], [10.72%],
     ),
-    caption: [Statistics of the three time-series datasets (Source: Jinyu Cai et al. 2025 @cai2025)]
+    caption: [Statistics of the three time-series datasets (Source: Jinyu Cai et al. 2025)]
   )
   - 16 baselines; AUC, AUPRC#footnote[Area Under the ROC Curve (AUC), Area Under the Precision-Recall Curve (AUPRC)], F1 *without* point adjustment
 ]
@@ -210,7 +199,7 @@
 #slide[Main Results][
   #figure(
     main-results(),
-    caption: [AUC, AUPRC, and F1 in % (Source: Table 2 of Jinyu Cai et al. 2025 @cai2025)],
+    caption: [AUC, AUPRC, and F1 in % (Source: Table 2 of Jinyu Cai et al. 2025)],
   )
 ]
 
@@ -218,7 +207,7 @@
   #two-col(ratio: (1.2fr, 1fr))[
     #figure(
       ablation(),
-      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of Jinyu Cai et al. 2025 @cai2025)],
+      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of Jinyu Cai et al. 2025)],
     )
   ][
     #v(20pt)
@@ -232,7 +221,7 @@
 #slide[Parameter Analysis][
   #figure(
     image("assets/fig-2.png", width: 92%),
-    caption: [Sensitivity to window size and $beta$ on SWaT (Source: Jinyu Cai et al. 2025 @cai2025)],
+    caption: [Sensitivity to window size and $beta$ on SWaT (Source: Jinyu Cai et al. 2025)],
   )
   #v(8pt)
   - *Window size*: best at 80--100; too short or too long both hurt
@@ -242,14 +231,14 @@
 #slide[Anomaly Score Visualization][
   #figure(
     image("assets/fig-3.png", width: 100%),
-    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: Jinyu Cai et al. 2025 @cai2025)],
+    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: Jinyu Cai et al. 2025)],
   )
   #v(8pt)
   - TranAD: low scores *inside* the anomaly $->$ anomaly reconstruction
   - SPAGD: score shift aligns with the ground truth
 ]
 
-#section-slide[Conclusion]
+#section[Conclusion]
 
 #slide[Paper Summary][
   #grid(
@@ -282,9 +271,4 @@
 #slide[Why This Paper & Overlap with My Research][
   - Interest in *graph neural networks* and *representation learning*
   - Curious about *dynamic graphs* since a lab meeting
-]
-
-#slide()[References][
-  #set text(lang: "en")
-  #bibliography("refs.bib")
 ]

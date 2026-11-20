@@ -1,39 +1,30 @@
-#import "@local/theme-academic:0.1.0": *
+#import "@local/theme-academic:0.2.1": *
 #import "@preview/cetz:0.5.2"
 #import "assets/forecast-model.typ": forecast-model
 
 #let title-text = "Simple and Efficient Heterogeneous Temporal Graph Neural Network"
 
-#show: deck.with(footer: title-text)
-
-#let palette = default-palette + (:)
-
-#set figure(supplement: "Figure")
-#show table: set text(size: 16pt)
-#show footnote.entry: set text(size: 16pt)
-#show list: set block(above: 0.65em, below: 0.65em)
+#show: deck.with(footer: [SE-HTGNN (Wang et al., NeurIPS 2025)])
 
 // ───────── 封面 ─────────
 #title-slide(
   title: title-text,
-  authors: [Yili Wang, Tairan Huang, Changlong He, Qiutong Li, Jianliang Gao],
-  venue: [NeurIPS],
-  year: [2025],
+  authors: [Yili Wang#super[1,2], Tairan Huang#super[1], Changlong He#super[1], Qiutong Li#super[1], Jianliang Gao#super[1\*]],
+  affiliations: [#super[1]Central South University #h(1em) #super[2]The Hong Kong University of Science and Technology (Guangzhou) #h(1em) #super[\*]Corresponding author],
+  venue: [NeurIPS 2025 (39th Conference on Neural Information Processing Systems)],
+  year: [],
   presenters: ([11557028 楊育哲]),
   date: [2026/10/21],
 )
 
-// ───────── Outline ─────────
-#outline-slide()
-
-#section-slide[Introduction]
+#section[Introduction]
 
 #slide[Problem Definition][
   - Heterogeneous Temporal Graph (HTG)
   - Heterogeneous Dynamic GNN (HDGNN): representation learning on HTGs
   #figure(
-    image("assets/HDGNN.png", width: 65%),
-    caption: [(a) HTG; (b) general HDGNN framework (Source: Wang et al. 2025 @wang2025a)]
+    image("assets/HDGNN.png", width: 58%),
+    caption: [(a) HTG; (b) general HDGNN framework (Source: Wang et al. 2025)]
   )
 ]
 
@@ -49,7 +40,7 @@
   - *Both*: attention discontinuity (no historical attention)
 ]
 
-#section-slide[Methodology]
+#section[Methodology]
 
 #slide[Problem Formulation][
   - Heterogeneous graph $G = (V, E, X, cal(T)_n, cal(T)_r), quad |cal(T)_n|+|cal(T)_r|>=2$ \ #h(1em) #text(fill: palette.muted)[$X$: feature set; $cal(T)_n, cal(T)_r$: node / relation type sets]
@@ -61,8 +52,8 @@
 
 #slide[SE-HTGNN Overview][
   #figure(
-    image("assets/SE-HTGNN.png", width: 97%),
-    caption: [SE-HTGNN architecture overview (Source: Wang et al. 2025 @wang2025a)]
+    image("assets/SE-HTGNN.png", width: 88%),
+    caption: [SE-HTGNN architecture overview (Source: Wang et al. 2025)]
   )
 ]
 
@@ -79,7 +70,7 @@
   ][
     #figure(
       image("assets/SE-HTGNN-b.png", width: 100%),
-      caption: [LLM-enhanced prompt (Source: Wang et al. 2025 @wang2025a)]
+      caption: [LLM-enhanced prompt (Source: Wang et al. 2025)]
     )
   ]
 ]
@@ -89,8 +80,8 @@
   - *Aggregation*: parameter-free GCN, no extra linear layers
   - *Fusion*: relation-wise GRU, $e^t_(v,r) = "GRU"_r (H^t_(v,r), e^(t-1)_(v,r))$
   #figure(
-    image("assets/SE-HTGNN-c.png", width: 64%),
-    caption: [Dynamic-attention-based graph learning (Source: Wang et al. 2025 @wang2025a)]
+    image("assets/SE-HTGNN-c.png", width: 56%),
+    caption: [Dynamic-attention-based graph learning (Source: Wang et al. 2025)]
   )
 ]
 
@@ -120,10 +111,9 @@
   )
 ]
 
-#section-slide[Experiments]
+#section[Experiments]
 
 #slide[Setup][
-  #set figure(supplement: "Table")
   #let m(x) = text(fill: palette.muted)[#x]
   #figure(
     kind: table,
@@ -136,7 +126,7 @@
       [YELP], [Node classification \ #m[(Macro-F1, Recall)]], [12 (month)], [user 55,702; business 12,524], [U–B review 87,846; \ U–B tip 35,508], [10 / 1 / 1],
       [COVID-19], [Node regression \ #m[(MAE, RMSE)]], [304 (day)], [county 3,223; state 54], [C–C 22,176; S–C 3,141; \ S–S 269], [244 / 30 / 30–90],
     ),
-    caption: [Dataset statistics; relations by node-type initials; split in snapshots (Source: Table 9 of Wang et al. 2025 @wang2025a)]
+    caption: [Dataset statistics; relations by node-type initials; split in snapshots (Source: Table 9 of Wang et al. 2025)]
   )
   #figure(
     kind: table,
@@ -146,14 +136,11 @@
       [*Homogeneous GNNs*], [*Heterogeneous GNNs*], [*Heterogeneous Dynamic GNNs*],
       [GCN, GAT, TGAT], [RGCN, RGAT, HGT, DiffMG], [DyHATR, HGT+, HTGNN, DHGAS, CasMLN],
     ),
-    caption: [Baselines (Source: Section 5.1 of Wang et al. 2025 @wang2025a)]
+    caption: [Baselines (Source: Section 5.1 of Wang et al. 2025)]
   )
 ]
 
 #slide[Main Results][
-  #set figure(supplement: "Table")
-  #let best(x) = text(fill: palette.accent)[*#x*]
-  #let second(x) = text(fill: palette.primary)[#underline[#x]]
   #figure(
     kind: table,
     table(
@@ -173,14 +160,13 @@
       [*SE-HTGNN*], best[93.13 ± 0.56], best[92.71 ± 0.52], best[91.08 ± 0.59], best[90.03 ± 0.48], best[44.24 ± 0.88], best[44.68 ± 0.43], best[497 ± 5], best[1069 ± 11],
       [Improve.], [+2.11%], [+3.62%], [+2.89%], [+3.19%], [+4.81%], [+4.96%], [+7.27%], [+4.56%],
     ),
-    caption: [HDGNN baselines only; mean ± std of 5 runs; #text(fill: palette.accent)[*best*], #text(fill: palette.primary)[#underline[second-best]] among all 12 baselines \ (Source: Table 1 of Wang et al. 2025 @wang2025a)]
+    caption: [HDGNN baselines only; mean ± std of 5 runs; #text(fill: palette.accent)[*best*], #text(fill: palette.primary)[#underline[second-best]] among all 12 baselines \ (Source: Table 1 of Wang et al. 2025)]
   )
   - Best on all 8 metrics; HGT+ / DHGAS run out of memory on OGBN-MAG
   - 60 / 90-day COVID-19 MAE: 825 / 1001 vs. 901 / 1084 (best baseline)
 ]
 
 #slide[Ablation Study][
-  #set figure(supplement: "Table")
   #two-col(ratio: (1.7fr, 1fr))[
     #figure(
       kind: table,
@@ -199,7 +185,7 @@
         [Agg → GAT], [91.93 ± 0.46], [88.37 ± 0.28], [42.11 ± 1.32], [605 ± 88],
         [*SE-HTGNN*], [*93.13 ± 0.56*], [*91.08 ± 0.59*], [*44.24 ± 0.88*], [*497 ± 5*],
       ),
-      caption: [One metric per dataset; mean ± std of 5 runs \ (Source: Table 3 of Wang et al. 2025 @wang2025a)]
+      caption: [One metric per dataset; mean ± std of 5 runs \ (Source: Table 3 of Wang et al. 2025)]
     )
   ][
     #v(20pt)
@@ -211,7 +197,6 @@
 ]
 
 #slide[Efficiency][
-  #set figure(supplement: "Table")
   #show table.cell: set text(size: 14pt)
   #two-col(ratio: (1fr, 1.4fr))[
     #figure(
@@ -225,7 +210,7 @@
         [CasMLN], [272], [135], [88], [637],
         [*SE-HTGNN*], [*102*], [*84*], [*47*], [*64*],
       ),
-      caption: [GPU seconds incl. LLM preprocessing (Source: Table 6 of Wang et al. 2025 @wang2025a)]
+      caption: [GPU seconds incl. LLM preprocessing (Source: Table 6 of Wang et al. 2025)]
     )
   ][
     #figure(
@@ -239,21 +224,28 @@
         [Transformer], [90.75 ± 0.32], [90.93 ± 0.45], [43.59 ± 1.21], [529 ± 12],
         [*GRU (ours)*], [*93.13 ± 0.56*], [*91.08 ± 0.59*], [44.24 ± 0.88], [*497 ± 5*],
       ),
-      caption: [Sequence module in dynamic attention; one metric per dataset (Source: Table 4 of Wang et al. 2025 @wang2025a)]
+      caption: [Sequence module in dynamic attention; one metric per dataset (Source: Table 4 of Wang et al. 2025)]
     )
   ]
   #grid(
-    columns: (1fr, 1fr),
+    columns: (1fr, 1.3fr),
     column-gutter: 20pt,
-    stat([2.7×], [OGBN-MAG vs. CasMLN]),
-    stat([≈10×], [COVID-19 vs. CasMLN]),
+    align: horizon,
+    equal-row(
+      columns: (1fr, 1fr),
+      gutter: 12pt,
+      h => stat([2.7×], [OGBN-MAG vs. CasMLN], height: h),
+      h => stat([≈10×], [COVID-19 vs. CasMLN], height: h),
+    ),
+    [
+      - Spatial cost $O("TRned")$; no $O("TRnd"^2)$ term as in HTGNN / CasMLN
+      - Converges within 50 epochs
+      - GRU ≈ LSTM in accuracy but cheaper; Mamba trains unstably
+    ],
   )
-  - Spatial cost $O("TRned")$; no $O("TRnd"^2)$ term as in HTGNN / CasMLN
-  - Converges within 50 epochs
-  - GRU ≈ LSTM in accuracy but cheaper; Mamba trains unstably
 ]
 
-#section-slide[Conclusion]
+#section[Conclusion]
 
 #slide[Paper Summary][
   #grid(
@@ -284,9 +276,4 @@
 #slide[Why This Paper & Overlap with My Research][
   - Interest in *graph neural networks* and *representation learning*
   - Curious about *heterogeneous graphs* since a lab meeting
-]
-
-#slide()[References][
-  #set text(lang: "en")
-  #bibliography("refs.bib")
 ]
