@@ -47,8 +47,8 @@
     } else {
       // spatial learning with dynamic attention, one per snapshot (shared weights)
       let gl = [Graph \ learning]
-      _row(in-xs, 2.1, 2.4, 1.2, (gl, gl), "gl")
-      _row(in-xs, 4.2, 1.9, 0.9, ($H^(t-gamma+1)$, $H^t$), "h")
+      _row(in-xs, 1.6, 2.4, 1.2, (gl, gl), "gl")
+      _row(in-xs, 3.2, 1.9, 0.9, ($H^(t-gamma+1)$, $H^t$), "h")
       for i in ("0", "2") {
         line("g" + i + ".north", "gl" + i + ".south", ..arrow)
         line("gl" + i + ".north", "h" + i + ".south", ..arrow)
@@ -56,39 +56,39 @@
 
       // GRU hidden state carries attention coefficients across snapshots
       let e-style = (stroke: 1.2pt + p.surface, mark: (end: "stealth", fill: p.surface))
-      _box((-3.2, 2.1), 2.2, 1.2, [LLM \ prompt], "llm", color: p.surface)
+      _box((-3.2, 1.6), 2.2, 1.2, [LLM \ prompt], "llm", color: p.surface)
       line("llm.east", "gl0.west", ..e-style, name: "e0")
       content("e0.mid", anchor: "south", padding: 0.12, text(fill: p.surface)[$e^0$])
-      line("gl0.east", (in-xs.at(1) - 0.35, 2.1), ..e-style, name: "e1")
-      line((in-xs.at(1) + 0.35, 2.1), "gl2.west", ..e-style)
+      line("gl0.east", (in-xs.at(1) - 0.35, 1.6), ..e-style, name: "e1")
+      line((in-xs.at(1) + 0.35, 1.6), "gl2.west", ..e-style)
       content("e1.mid", anchor: "south", padding: 0.12, text(fill: p.surface)[$e$])
 
       // stacked representations Z -> linear project -> Z'
-      rect((in-xs.at(0) - 1.15, 3.6), (in-xs.at(2) + 1.15, 4.8), radius: 0.12,
+      rect((in-xs.at(0) - 1.15, 2.6), (in-xs.at(2) + 1.15, 3.8), radius: 0.12,
         stroke: (paint: p.muted, thickness: 0.8pt, dash: "dashed"), name: "z")
       content("z.north", anchor: "south", padding: 0.1,
         text(fill: p.muted)[$Z in RR^(N times d times gamma)$])
-      _row(out-xs, 4.2, 1.9, 0.9, ($H^(t+1)$, $H^(t+beta)$), "ho")
-      rect((out-xs.at(0) - 1.15, 3.6), (out-xs.at(2) + 1.15, 4.8), radius: 0.12,
+      _row(out-xs, 3.2, 1.9, 0.9, ($H^(t+1)$, $H^(t+beta)$), "ho")
+      rect((out-xs.at(0) - 1.15, 2.6), (out-xs.at(2) + 1.15, 3.8), radius: 0.12,
         stroke: (paint: p.muted, thickness: 0.8pt, dash: "dashed"), name: "zo")
       content("zo.north", anchor: "south", padding: 0.1,
         text(fill: p.muted)[$Z' in RR^(N times d times beta)$])
 
-      _box((9.1, 4.2), 2.4, 1.2, text(size: sizes.body, fill: p.accent)[*Linear*], "lp",
+      _box((9.1, 3.2), 2.4, 1.2, text(size: sizes.body, fill: p.accent)[*Linear*], "lp",
         color: p.accent)
       content("lp.south", anchor: "north", padding: 0.15,
         text(fill: p.accent)[$Z' = Z W + b$])
       line("z.east", "lp.west", ..arrow)
       line("lp.east", "zo.west", ..arrow)
 
-      _box((out-xs.at(1), 2.1), 7.5, 1.1, [MLP head (per step)], "mlp")
+      _box((out-xs.at(1), 1.6), 7.5, 1.1, [MLP head (per step)], "mlp")
       line("zo.south", "mlp.north", ..arrow)
       for i in ("0", "2") {
         line(("y" + i + ".north", "|-", "mlp.south"), "y" + i + ".north", ..arrow)
       }
 
       // F encloses everything between inputs and predictions
-      rect((-4.6, 1.2), (19.6, 5.8), radius: 0.2,
+      rect((-4.6, 0.9), (19.6, 4.6), radius: 0.2,
         stroke: (paint: p.text, thickness: 0.8pt, dash: "dotted"), name: "f")
       content("f.north-west", anchor: "north-west", padding: 0.15,
         text(size: sizes.body)[$F(dot.c ; theta)$])
