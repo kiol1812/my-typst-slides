@@ -24,18 +24,27 @@
 
 `theme-academic` 已經包好以下元件並注入主題配色，能用就不要重畫：
 
-| 需求                                   | 用法                                                                |
-| -------------------------------------- | ------------------------------------------------------------------- |
+| 需求                                   | 用法                                                                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | 線性的步驟 / pipeline 階段（可分兩區） | `flow(((title, sub), ...), split: n, zone-a: "...", zone-b: "...")`；階段寫成 `(title, sub, color)` 可個別指定顏色（slide-kit 0.1.2 起） |
-| 年代、里程碑                           | `timeline(items: ((year: [..], title: [..], desc: [..]), ...))`     |
-| 排程                                   | `gantt(rows, total: 16, mid: 8)`                                    |
-| 重點數字                               | `stat(value, label, note: ..)`                                      |
-| A + B = C 式的組合                     | `versus(left, right, result)`                                       |
-| 字母編號的條列方塊                     | `mini(letter, name)[說明]`                                          |
-| 含標題的方塊 / 註解框 / 小標籤         | `card(head)[..]`、`callout(title: .., kind: ..)[..]`、`tag[..]`     |
-| 左右分欄                               | `two-col(ratio: (1fr, 1fr))[左][右]`                                |
-| 並排方塊取相同高度                     | `equal-row(columns: (1fr, 1fr), h => card(.., height: h)[..], ..)`（theme-academic 0.1.2 / 0.2.1 起） |
-| 灰色補充說明、結果表最佳 / 次佳        | `note[..]`、`best[..]`、`second[..]`（theme-academic 0.1.2 / 0.2.1 起） |
+| 年代、里程碑                           | `timeline(items: ((year: [..], title: [..], desc: [..]), ...))`                                                                          |
+| 排程                                   | `gantt(rows, total: 16, mid: 8)`                                                                                                         |
+| 重點數字                               | `stat(value, label, note: ..)`                                                                                                           |
+| A + B = C 式的組合                     | `versus(left, right, result)`                                                                                                            |
+| 字母編號的條列方塊                     | `mini(letter, name)[說明]`                                                                                                               |
+| 含標題的方塊 / 註解框 / 小標籤         | `card(head)[..]`、`callout(title: .., kind: ..)[..]`、`tag[..]`；只替 card 標籤上色用 `card(head, head-color: "accent")`（0.2.2 起）     |
+| 左右分欄                               | `two-col(ratio: (1fr, 1fr))[左][右]`                                                                                                     |
+| 並排方塊取相同高度                     | `equal-row(columns: (1fr, 1fr), h => card(.., height: h)[..], ..)`（theme-academic 0.1.2 / 0.2.1 起）                                    |
+| 灰色補充說明、結果表最佳 / 次佳        | `note[..]`、`best[..]`、`second[..]`（theme-academic 0.1.2 / 0.2.1 起）                                                                  |
+| 內文或標籤中對照圖中強調色的文字       | `hl[..]`，accent 原色；只替標籤的部分文字上色時寫 `card([Step 2: #hl[..]])`（theme-academic 0.2.2 起）                                   |
+
+theme-academic 0.2.2（slide-kit 0.1.3）起，元件的輸入更寬鬆：
+
+- 文字參數接受字串、數字、數學式、圖片等任何內容；`none` 表示省略該部分（例如 `card(none)[..]` 不畫標籤）。
+- 顏色參數（`color`、`head-color`、`callout(kind:)`、`flow` 階段與區段、`gantt` 列）接受 color、palette key（`"accent"`、`"surface"` 等）或 `auto`；寫錯 key 會列出可用的 key。
+- `flow` 的階段可寫成 `[Title]`、`([Title], [sub], "accent")`（後兩項可省略）或 `(title: .., sub: .., color: ..)`；`split` 可為 0 到全部；`zone-a` / `zone-b` 不給就不畫底線。
+- `timeline` 的項目可寫成 dictionary 或 `(year, title, desc)` 陣列，`year` / `desc` 可省略；`gantt` 的列同理，`color` 可省略。
+- `equal-row` 省略 `columns` 時等寬；項目可直接給內容（維持自然高度），要等高時仍用 `h => card(.., height: h)[..]`。
 
 上面都不適用時，依圖形性質選工具：
 
@@ -120,6 +129,8 @@
 | `body`    | 20pt | 圖中較大的標題文字           |
 | `label`   | 16pt | 節點文字（預設）             |
 | `small`   | 14pt | 座標軸刻度、邊上的標籤、圖例 |
+
+- theme-academic 0.2.2 起，內文、表格與 `card` 等元件文字都是 `body` 20pt，圖說是 `label` 16pt；圖中的文字用 `label` / `small`，比旁邊的內文小一到兩層即可，不要另外設定其他字級。
 
 ### 尺寸
 

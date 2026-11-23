@@ -10,13 +10,14 @@
 │  ├─ slide-kit/
 │  │  ├─ 0.1.0/                    # callout、code-block（theme-basic 使用）
 │  │  ├─ 0.1.1/                    # callout、card、gantt、stat、tag、timeline、flow 等
-│  │  └─ 0.1.2/                    # 0.1.1 + note / best / second、equal-row 等
+│  │  ├─ 0.1.2/                    # 0.1.1 + note / best / second、equal-row 等
+│  │  └─ 0.1.3/                    # 0.1.2 + 統一字級（body 20 / label 16 / small 14）、寬鬆輸入、hl
 │  │     ├─ typst.toml
 │  │     ├─ lib.typ                # 只 re-export 公開 API
 │  │     └─ src/                   # 內部實作
 │  ├─ theme-academic/              # 論文報告主題；各版本差異見 CLAUDE.md
 │  │  ├─ 0.1.0/ 0.1.1/ 0.1.2/      # section-slide 分隔頁（0.1.2 依賴 slide-kit 0.1.2）
-│  │  └─ 0.2.0/ 0.2.1/             # #section[...] 不產生新頁（0.2.1 依賴 slide-kit 0.1.2）
+│  │  └─ 0.2.0/ 0.2.1/ 0.2.2/      # #section[...] 不產生新頁（0.2.1 依賴 slide-kit 0.1.2，0.2.2 依賴 0.1.3）
 │  └─ theme-basic/0.1.0/           # 簡易主題（依賴 slide-kit 0.1.0）
 ├─ templates/
 │  ├─ slide/                       # `just new` 預設模板（theme-academic 0.1.2）

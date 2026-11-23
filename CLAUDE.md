@@ -25,7 +25,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 沒有測試或 lint；驗證方式是 `just build <slide>` 能成功編譯且沒有缺字警告，新主題的 slide 再加上 `just check <slide>` 沒有溢出頁。
 
-處理溢出頁時不要調整字級（包含程式碼、圖說、表格與 `#set text(size:)`）。依序嘗試：改變排版（例如 `grid` 改成左右並排、調整欄寬比例、把內容移進 `card` 並排）、縮小圖片或截圖寬度、精簡或拆分內容（文字改動要先徵求使用者同意）。都無法解決時，在對話中列出選項讓使用者決定。
+處理溢出頁時不要調整字級（包含程式碼、圖說、表格與 `#set text(size:)`）。依序嘗試：改變排版（例如 `grid` 改成左右並排、調整欄寬比例、把內容移進 `card` 並排）、縮小圖片或截圖寬度、精簡或拆分內容（文字改動要先徵求使用者同意）。都無法解決時，在對話中列出選項讓使用者決定。例外：表格真的無法靠排版放下時，可以調整表格字級，但必須整份簡報統一（theme-academic 0.2.2 用 `deck(table-size:)` 設定一次），不可讓各頁表格字級不同，也不要在個別表格設定 `#set text(size:)`。
 
 `<slide>` 是 `slides/` 下的資料夾名稱（例如 `SPAGD`、`RL4REAl`），也就是 release tag 中的 slide id。
 
@@ -37,7 +37,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 2. **主題**（`theme-academic`、`theme-basic`）：以 `#import "@local/slide-kit:<ver>" as kit` 引用元件，定義 `deck`、`slide`、`title-slide`、`section-slide`、`outline-slide` 等版面函式，並把 kit 元件包一層、注入主題自己的 palette/sizes（例如 `theme-academic` 的 `academic-palette`，對外以 `default-palette` 匯出）。
 3. **slides**：`slides/<id>/main.typ` 引用主題（既有 slide 用 `0.1.0` / `0.2.0`；`templates/slide/` 的新 slide 用 `0.1.2`，`templates/compact/` 用 `0.2.1`），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
 
-`theme-academic` 的 `slide` 簽名是 `slide(title, subtitle: none, outlined: false, body)`，所以寫法為 `#slide[標題][內容]`。
+`theme-academic` 的 `slide` 簽名是 `slide(title, subtitle: none, outlined: false, body)`（0.1.2 起多了 `source:`，0.2.x 再多 `prefix:`），所以寫法為 `#slide[標題][內容]`。
 
 `theme-academic` 各版本：
 
@@ -48,6 +48,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 | 0.1.2 | 同上（`templates/slide/`） | 0.1.1 + 下方共同新增功能（slide-kit 0.1.2） |
 | 0.2.0 | `#section[...]`，不產生新頁 | 章節顯示在標題上方小字與頁尾導覽；`slide(source:)`、`title-slide(affiliations:)`、`deck(list-sizes:)` |
 | 0.2.1 | 同上（`templates/compact/`） | 0.2.0 + 下方共同新增功能；`list-sizes` 改為 `text-size` |
+| 0.2.2 | 同上 | 0.2.1 + 統一字級（slide-kit 0.1.3，見下方） |
 
 0.1.2 / 0.2.1 共同新增：
 - `deck(text-size:, lang: "en", debug:)`：清單字級改為相對值（放進 `card`、`callout` 會跟著元件字級）；圖表 supplement 依 `lang` 自動顯示 Figure / Table，表格圖說在上方；原本每份 slide 開頭的 `#set` / `#show` 已收進 `deck`，主題也直接匯出 `palette`。`debug: true` 會在溢出頁標紅字。
@@ -58,6 +59,8 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 - `equal-row(columns:, gutter:, ..items)`：一列區塊取最高者的高度，每個 item 是接收高度的函式（`h => card(..., height: h)[..]`）。
 - `card`、`stat`、`mini` 不會被拆到兩頁；`flow` 的階段可用第三個元素指定顏色。
 - 頁尾在有章節時列出可點擊的章節導覽（0.1.1 起），文字太長時導覽移到頁尾線上方靠右。
+
+0.2.2 統一字級（`deck(table-size:)` 可統一調整整份簡報的表格字級，預設同內文），整份簡報只有三層：`body` 20pt（deck 內文預設、表格、`card` / `mini` / `callout` / `timeline` / `stat` 的文字與元件內粗體標題）、`label` 16pt（圖說、註腳、參考文獻、`flow` 說明、`stat` 註記、圖中節點文字）、`small` 14pt（圖內小字、`gantt`）；`stat` 的數字為 32pt。元件輸入也放寬：文字參數接受任何內容（字串、數字、數學式、圖片），`none` 表示省略；顏色參數接受 color 或 palette key（例如 `"accent"`）；`flow` / `timeline` / `gantt` 的項目可寫成 dictionary 或陣列，非必要欄位可省略；新增 `card(head-color:)`（只替標籤上色）與 `hl[..]`（accent 原色的文字強調，也可只用在標籤的部分文字），細節見 `guides/figures.md` 第 2 節。同時修正：References 頁不再顯示上一章的章節小字；`venue` 空白時封面不印開頭逗號；`versus` 的 `+` / `=` 不再超出圓圈。`equal-row` 量測清單時高度偏矮的問題只修在 0.2.2；0.1.2 / 0.2.1 維持原樣，在這兩版用 `equal-row` 放含清單的 `card` 時，最後一行會貼近下框線。
 
 ### 版本規則
 
