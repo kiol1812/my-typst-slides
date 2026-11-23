@@ -20,8 +20,8 @@
 │  │  └─ 0.2.0/ 0.2.1/ 0.2.2/      # #section[...] 不產生新頁（0.2.1 依賴 slide-kit 0.1.2，0.2.2 依賴 0.1.3）
 │  └─ theme-basic/0.1.0/           # 簡易主題（依賴 slide-kit 0.1.0）
 ├─ templates/
-│  ├─ slide/                       # `just new` 預設模板（theme-academic 0.1.2）
-│  └─ compact/                     # `just new <id> compact`，有頁數上限的課程報告（theme-academic 0.2.1）
+│  ├─ slide/                       # `just new` 預設模板（主題版本在 `just new` 時選定，見 `just versions`）
+│  └─ compact/                     # `just new <id> compact`，有頁數上限的課程報告
 ├─ slides/
 │  ├─ example/                     # 元件展示範例
 │  └─ <slide-id>/                  # 每份 slide 一個資料夾（例如 SPAGD、RL4REAl、AlphaDev）
@@ -39,7 +39,8 @@
 ├─ scripts/
 │  ├─ build-index.py               # 掃描 meta.toml 產生索引
 │  ├─ fill_slide_meta.py           # 從 refs.bib 填入 slide 的標題、作者等資訊
-│  └─ export-slide.py              # `just export`：匯出最小可編譯專案
+│  ├─ export-slide.py              # `just export`：匯出最小可編譯專案
+│  └─ template_versions.py         # `just new` / `just versions`：模板可選的主題版本
 ├─ docs/                           # 不進版控：索引輸出、課程規範、論文原始檔、套件參考文件
 ├─ .claude/skills/                 # Claude Code skills（new-slide、slide-figure）
 ├─ CLAUDE.md                       # 給 Claude Code 的專案說明（架構、版本、規範）
@@ -61,10 +62,10 @@ Typst 不支援從 git repo 取得依賴，套件來源只有 Typst Universe、`
 
 ```typst
 // 模板引用共用元件（版本寫死，確保可重現）
-#import "@local/slide-kit:0.1.2" as kit
+#import "@local/slide-kit:<version>" as kit
 
 // slide 引用模板
-#import "@local/theme-academic:0.2.1": *
+#import "@local/theme-academic:<version>": *
 ```
 
 好處：
@@ -87,9 +88,13 @@ Git tag 是整個 repo 共用的名稱，不屬於某個資料夾，所以：
 1. 建立 slide 資料夾（從 `templates/<template>/` 複製，`meta.toml` 的日期自動填今天）：
 
    ```bash
-   just new <slide-id>           # templates/slide，一般論文報告（theme-academic 0.1.2）
-   just new <slide-id> compact   # templates/compact，有頁數上限的課程報告（theme-academic 0.2.1）
+   just new <slide-id>                 # templates/slide，一般論文報告
+   just new <slide-id> compact         # templates/compact，有頁數上限的課程報告
+   just new <slide-id> compact 0.2.1   # 指定主題版本；不指定時終端機會詢問（預設最新版）
+   just versions                       # 各模板可選的主題版本與預設版本
    ```
+
+   模板的 import 是 `:<version>` 佔位，`just new` 會換成選定的版本。建立後會提示：內容寫完要刪除 `main.typ` 中以 `// 提醒：` 開頭的註解。
 
    論文報告的內容與頁面規範見 `guides/paper-report.md`；課程作業另見 `guides/courses/`。
 
@@ -156,6 +161,7 @@ just fig <slide> <name>   # 單獨預覽 slides/<slide>/assets/<name>.typ -> out
 just png <slide> [ppi]    # 每頁轉成 PNG -> out/<slide>-png/
 just check <slide>        # 列出內容溢出的頁面（theme-academic 0.1.2 / 0.2.1 以上）
 just export <slide>       # 匯出最小可編譯專案 -> out/<slide>.zip
+just versions             # 各模板可選的主題版本與預設版本
 ```
 
 ### 發佈 release

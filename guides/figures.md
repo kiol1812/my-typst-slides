@@ -83,12 +83,12 @@ theme-academic 0.2.2（slide-kit 0.1.3）起，元件的輸入更寬鬆：
 
 規則：
 
-- **主題版本與 `main.typ` 相同**：上例以 0.1.0 示範；slide 用 0.1.0 以外的版本時（例如 `slide` 模板的 0.1.2、`compact` 模板的 0.2.1），圖檔也改 import 相同版本，各版的 `default-palette`、`academic-sizes` 與元件相同。
+- **主題版本與 `main.typ` 相同**：上例以 0.1.0 示範，實際寫圖時照抄該 slide `main.typ` 第一行的版本（新 slide 的版本在 `just new` 時選定）。各版的 `default-palette` 相同；`academic-sizes` 的 `label`、`small` 在各版都是 16pt / 14pt，所以圖的字級不受主題版本影響。
 - **主題名稱一律具名 import**（`default-palette`、`academic-sizes`、`main-palette`、`card` 等），不要 `#import "@local/theme-academic:0.1.0": *`。
 - **入口函式的參數沿用主題慣例**：`palette: (:)` 與 `sizes: academic-sizes`，函式內用 `let p = default-palette + palette`。需要可調的內容（資料、標籤）也做成參數。
 - **檔案頂層只放 import 與 `#let`**。不要有頂層的 `#set`、`#show`、可見內容或測試呼叫；樣式設定寫在函式內，只作用於該圖。
 - **不要設定字型**，沿用 `deck` 的字型；只用 `sizes` 設定字級。
-- slide 使用的主題不是 `theme-academic` 時（例如 `theme-basic` 沒有 palette），改從 `@local/slide-kit:0.1.2` 匯入 `default-palette`、`default-sizes`。
+- slide 使用的主題不是 `theme-academic` 時（例如 `theme-basic` 沒有 palette），改從該主題 `lib.typ` 所 import 的 slide-kit 版本匯入 `default-palette`、`default-sizes`。
 
 ### 主文件引用
 

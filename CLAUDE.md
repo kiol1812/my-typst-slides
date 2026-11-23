@@ -13,11 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 just build <slide>          # 編譯 slides/<slide>/main.typ -> out/<slide>.pdf
 just watch <slide>          # 即時預覽（會濾掉含 "font" 的警告行）
-just new <slide> [template] # 從 templates/<template>/ 建立新 slide（預設 slide；compact 為無章節頁版本）
+just new <slide> [template] [version]  # 從 templates/<template>/ 建立新 slide（預設 slide；compact 為無章節頁版本）；不給版本時終端機會詢問，非互動時用最新版
 just fill <slide> [bib-key] # 從 refs.bib 填入 main.typ 的標題、作者、venue、年份與 meta.toml 的 title
 just fig <slide> <name>     # 單獨預覽 slides/<slide>/assets/<name>.typ 的 <name>() -> out/<slide>--<name>.pdf
 just png <slide> [ppi]      # 每頁轉成 PNG 檢查版面 -> out/<slide>-png/
 just check <slide>          # 列出內容溢出、被擠到下一頁的頁面（theme-academic 0.1.2 / 0.2.1 以上）
+just versions               # 各模板可選的主題版本與 just new 的預設版本
 just export <slide>         # 匯出最小可編譯專案（簡報、assets、用到的本地套件版本、README）-> out/<slide>.zip
 python3 scripts/build-index.py [--include-draft]   # 由各 meta.toml 產生 docs/index.md 與 docs/index.json
 typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書有被載入
@@ -35,7 +36,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 1. **`slide-kit`**：跨主題共用元件（callout、card、gantt、stat、tag、timeline、mixed 中的 flow/mini/versus、layout 中的 equal-row 等）。`lib.typ` 只 re-export 公開 API，實作在 `src/`。元件接受 `palette` / `sizes` 參數，預設值來自 `src/style.typ` 的 `default-palette` / `default-sizes`。
 2. **主題**（`theme-academic`、`theme-basic`）：以 `#import "@local/slide-kit:<ver>" as kit` 引用元件，定義 `deck`、`slide`、`title-slide`、`section-slide`、`outline-slide` 等版面函式，並把 kit 元件包一層、注入主題自己的 palette/sizes（例如 `theme-academic` 的 `academic-palette`，對外以 `default-palette` 匯出）。
-3. **slides**：`slides/<id>/main.typ` 引用主題（既有 slide 用 `0.1.0` / `0.2.0`；`templates/slide/` 的新 slide 用 `0.1.2`，`templates/compact/` 用 `0.2.1`），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
+3. **slides**：`slides/<id>/main.typ` 引用主題（新 slide 的版本在 `just new` 時選定並寫死，可選版本用 `just versions` 查詢；既有 slide 維持建立時的版本），可另外引用 `@preview/cetz`、`cetz-plot` 等 Universe 套件。每份 slide 附 `meta.toml`（索引用 metadata，`status = "draft"` 不進索引）、`refs.bib`，以及選用的 `assets/`。
 
 `theme-academic` 的 `slide` 簽名是 `slide(title, subtitle: none, outlined: false, body)`（0.1.2 起多了 `source:`，0.2.x 再多 `prefix:`），所以寫法為 `#slide[標題][內容]`。
 
@@ -45,9 +46,9 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 | --- | --- | --- |
 | 0.1.0 | `section-slide` 分隔頁 | 原始版本 |
 | 0.1.1 | 同上 | 頁尾章節導覽 |
-| 0.1.2 | 同上（`templates/slide/`） | 0.1.1 + 下方共同新增功能（slide-kit 0.1.2） |
+| 0.1.2 | 同上 | 0.1.1 + 下方共同新增功能（slide-kit 0.1.2） |
 | 0.2.0 | `#section[...]`，不產生新頁 | 章節顯示在標題上方小字與頁尾導覽；`slide(source:)`、`title-slide(affiliations:)`、`deck(list-sizes:)` |
-| 0.2.1 | 同上（`templates/compact/`） | 0.2.0 + 下方共同新增功能；`list-sizes` 改為 `text-size` |
+| 0.2.1 | 同上 | 0.2.0 + 下方共同新增功能；`list-sizes` 改為 `text-size` |
 | 0.2.2 | 同上 | 0.2.1 + 統一字級（slide-kit 0.1.3，見下方） |
 
 0.1.2 / 0.2.1 共同新增：
@@ -67,10 +68,16 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 - import 一律寫死版本。對元件或主題做破壞性改動時，複製成新的版本資料夾（如 `slide-kit/0.1.1/` 之於 `0.1.0/`），更新需要的主題 import，舊 slide 不動。
 - 修改既有版本的 package 會影響所有引用它的 slide，改完應重新編譯受影響的 slide 確認。
 - 只新增元件、不改既有行為時，可直接加在既有版本（先確認有哪些 slide 引用該版本）。
+- 模板不寫死版本：`templates/<name>/main.typ` 的 import 是 `:<version>` 佔位，開頭的 `// template: theme-academic 0.2.1+` 標記該模板支援的最低版本（同一個 major.minor 系列內，更新的版本都可用）。`just new` 會在建立時選定版本寫入 slide，預設是 `packages/local/` 中該系列最新的版本資料夾。所以發佈同系列的新版本時只要新增版本資料夾，並在上方版本表加一列說明；模板與其他文件都不用改。新增不同系列（例如 0.3.x）時才需要改模板的標記，或另開一個模板。
+- 文件中不寫「某模板目前用 x.y.z」，改指向 `just versions`；只有描述特定版本的事實（版本表、「0.2.2 起」、「0.1.2 / 0.2.1 以上」）才寫版本號。
 
 ### 模板與腳本的耦合
 
 `scripts/fill_slide_meta.py` 以正規表示式改寫 `main.typ`，依賴 `templates/*/main.typ` 中的固定格式：`#let title-text = "..."` 單行，以及 `title-slide(...)` 內 `authors: [...]`、`venue: [...]`、`year: [...]` 各自一行。修改模板時要維持這些行的格式，否則 `just fill` 會失效。
+
+`scripts/template_versions.py`（`just new`、`just versions` 使用）依賴模板開頭的格式：`// template: <package> <x.y.z>+` 標記行、以 `// template:` 開頭的說明行（建立 slide 時整行刪除），以及 import 中的 `<version>` 佔位。
+
+模板中提醒寫法的註解一律以 `// 提醒：` 開頭（`just new` 建立後會提示）。slide 的內容寫完後要刪除這些提醒註解，可用 `grep -n "// 提醒：" slides/<id>/main.typ` 找出；結構用的分隔註解（`// ───────── 封面 ─────────` 等）保留。
 
 ## 論文報告
 
