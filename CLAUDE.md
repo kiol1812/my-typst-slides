@@ -83,7 +83,13 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 
 製作或修改任何論文報告簡報時，先讀 `guides/paper-report.md` 並遵守：約 12 分鐘、內文英文且字少、先大方向再細節、必備內容與預留頁面（`TODO`）格式。使用者指定不要修改的部分不做任何更動，建議只在對話中提出。
 
-課程作業的論文報告（規範放在 `docs/courses/<課程>/`）以該課程規範為準，與 `guides/paper-report.md` 衝突時（頁數、時間、TODO 頁、References 頁等）依課程規範，並使用 `compact` 模板。課程若有 `guides/courses/<課程>.md`，先讀它：裡面是依該課程規範整理出的頁面配置與寫法慣例（例如 Optimization HW2 見 `guides/courses/optimization-hw2.md`）。
+課程作業的論文報告（規範放在 `docs/courses/<課程>/`）以該課程規範為準，與 `guides/paper-report.md` 衝突時（頁數、時間、TODO 頁、References 頁等）依課程規範，並使用 `compact` 模板。課程若有 `guides/courses/<課程>.md`，先讀它：裡面是依該課程規範整理出的頁面配置與寫法慣例。
+
+課程作業已繳交或已過期（已完成）時，該作業在 `docs/courses/<課程>/` 的規範檔與對應的 `guides/courses/<課程>.md` 進入封存狀態（同一門課之後的作業不受影響）：保留原樣作為紀錄，模板、套件或其他規範更新時不再同步修改，也不要拿來當新簡報的依據（除非使用者指定）。封存的作業與對應的 slide 一樣維持原本的主題版本。目前封存：
+
+| 作業 | 文件 | 對應的 slide |
+| --- | --- | --- |
+| Optimization HW2 | `docs/courses/Optimization/` 中的 HW2 作業指引與範例、`guides/courses/optimization-hw2.md` | `AlphaDev`、`RL4REAl`、`S2V-DQN`（batch `opt_midterm`） |
 
 ## 圖形
 
@@ -103,7 +109,7 @@ typst fonts --font-path fonts | grep -i "TW-MOE"   # 確認教育部標準楷書
 | 改動 | 要檢查的文件 |
 | --- | --- |
 | 新增 / 修改 package 元件或版本 | `CLAUDE.md`（架構、版本表）、`README.md`（目錄結構、範例 import）、`guides/figures.md` 第 2 節元件表、`.claude/skills/slide-figure/SKILL.md` |
-| 模板 | `CLAUDE.md`、`README.md`、`.claude/skills/new-slide/SKILL.md`、`guides/courses/*.md`；`just fill` 依賴的行格式不可破壞 |
+| 模板 | `CLAUDE.md`、`README.md`、`.claude/skills/new-slide/SKILL.md`、`guides/courses/*.md`（已封存的除外，見「論文報告」）；`just fill` 依賴的行格式不可破壞 |
 | justfile 指令、`scripts/` | `CLAUDE.md` 常用指令、`README.md` 使用方式 |
 | `.github/workflows/`、tag 或 batch 格式 | `CLAUDE.md` 專案概要、`README.md`（Tag、發佈 release） |
 | 新增目錄或頂層檔案 | `README.md` 目錄結構 |

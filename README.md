@@ -34,7 +34,7 @@
 ├─ guides/
 │  ├─ paper-report.md              # 論文報告簡報指南
 │  ├─ figures.md                   # 圖形繪製指南（cetz / cetz-plot / fletcher）
-│  └─ courses/                     # 各課程作業的頁面配置與寫法慣例
+│  └─ courses/                     # 各課程作業的頁面配置與寫法慣例（作業完成後封存，見 CLAUDE.md）
 ├─ fonts/                          # 字型（CI 與本機一致，避免缺字）
 ├─ scripts/
 │  ├─ build-index.py               # 掃描 meta.toml 產生索引

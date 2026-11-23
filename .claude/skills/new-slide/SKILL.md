@@ -36,7 +36,7 @@ just new <id> compact 0.2.1    # 使用者指定主題版本時
 
 不指定版本時，由 Claude 執行（非互動）會直接用該模板支援的最新版；可選版本用 `just versions` 查詢。輸出的「✓ 已建立 …（theme-academic:x.y.z）」就是寫入 slide 的版本，回報時一併告訴使用者。
 
-`compact` 模板不使用章節分隔頁（改用 `#section[...]`），`slide` 可帶 `source:` 在頁尾標來源，封面可填 `affiliations:`。課程作業有規範時（`docs/courses/`），依規範決定頁數與是否保留 Outline / References。
+`compact` 模板不使用章節分隔頁（改用 `#section[...]`），`slide` 可帶 `source:` 在頁尾標來源，封面可填 `affiliations:`。課程作業有規範時（`docs/courses/`），依規範決定頁數與是否保留 Outline / References；已封存（已繳交或過期）的課程規範不適用，清單見 `CLAUDE.md`。
 
 把 BibTeX 寫入 `slides/<id>/refs.bib`（用 Write 工具），然後：
 
