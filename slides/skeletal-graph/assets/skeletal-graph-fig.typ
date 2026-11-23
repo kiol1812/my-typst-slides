@@ -5,18 +5,18 @@
 // 0 = P, 3 = I, 7 = J, 10 = Q.
 #let _nodes = (
   (0, 0.6), (0.9, 1.4), (0.9, -0.2), (1.8, 0.6), (2.3, -0.3), (3.1, -0.3),
-  (3.3, 0.5), (3.6, 1.3), (4.4, 1.8), (4.4, 0.6), (5.2, 1.3),
+  (3.6, 0.5), (3.6, 1.3), (4.4, 1.8), (4.4, 0.6), (5.2, 1.3),
 )
 #let _edges = (
-  (0, 1), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3), (3, 4), (4, 5), (5, 6),
+  (0, 1), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3), (3, 4), (3, 5), (4, 5), (5, 6),
   (6, 7), (3, 7), (7, 8), (7, 9), (8, 9), (8, 10), (9, 10), (7, 10),
 )
 // (node, label, anchor of the label relative to the node)
 #let _names = ((0, $P$, "east"), (3, $I$, "north"), (7, $J$, "south-east"), (10, $Q$, "west"))
 
 // Skeletal graph used in panel (d): a spanning tree whose interior nodes form S.
-#let _skeletal = ((0, 3), (1, 3), (2, 3), (3, 7), (3, 4), (5, 6), (6, 7), (7, 8), (7, 9), (7, 10))
-#let _interior = (3, 6, 7)
+#let _skeletal = ((0, 3), (1, 3), (2, 3), (3, 7), (3, 4), (3, 5), (5, 6), (6, 7), (7, 8), (7, 9), (7, 10))
+#let _interior = (3, 5, 6, 7)
 
 #let _panel(ox, k, p, sizes, path: (), growth: 0.07, removed: (), skeletal: false, label-edge: false) = {
   import cetz.draw: *
@@ -76,7 +76,7 @@
     let panels = (
       ([(a) Image graph $G_I$], (:)),
       ([(b) Shortest path $P -> Q$], (path: (0, 3, 7, 10))),
-      ([(c) Edge $(I, J)$ removed], (path: (0, 3, 4, 5, 6, 7, 10), removed: ((3, 7),))),
+      ([(c) Edge $(I, J)$ removed], (path: (0, 3, 5, 6, 7, 10), removed: ((3, 7),))),
       ([(d) Skeletal graph $G_S$], (skeletal: true)),
     )
     for (j, (caption, args)) in panels.enumerate() {

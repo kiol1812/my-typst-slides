@@ -1,6 +1,7 @@
 #import "@local/theme-academic:0.2.2": *
 #import "assets/skeletal-graph-fig.typ": skeletal-graph-fig
-#import "assets/pipeline-topdown.typ": pipeline-topdown
+#import "assets/pipeline-topdown.typ": pipeline-rows, pipeline-mark
+#import "assets/pair-graph-fig.typ": pair-graph-fig
 
 #let title-text = "Skeletal Graphs for Efficient Structure from Motion"
 
@@ -56,7 +57,7 @@
     h => card([Image Graph $G_I$], height: h)[
       - Node = image, edge = two-frame reconstruction
       - Weight $w_(I J) = tr(C_(I J))$: positional uncertainty
-      - Path length ≈ uncertainty; fewer edges → longer paths
+      - Shortest path = upper bound on uncertainty; fewer edges → longer paths
     ],
     h => card([Skeletal Graph $G_S$: max-leaf $t$-spanner], height: h)[
       - $d(P, Q; G_S) <= t dot d(P, Q; G_I)$ for all $P, Q$
@@ -66,48 +67,60 @@
   )
 ]
 
+#slide[Feasibility: Pair Graph $G_P$][
+  #align(center, pair-graph-fig())
+  #v(12pt)
+  #equal-row(
+    h => card([Problem], height: h)[
+      - $A$–$B$, $B$–$C$ reconstruct, no shared points → scale unknown → path infeasible
+    ],
+    h => card([Pair Graph $G_P$], height: h)[
+      - Node = pairwise reconstruction
+      - Edge if ≥ 16 shared inliers
+      - $d_f$ = shortest feasible path, computed in $G_P$
+    ],
+  )
+  #note[Used later: importance pruning ($d_f$) · tree growth (feasible steps only) · stretch check ($d_f$)]
+]
+
 #slide[Pipeline: Building the Graphs][
-  #grid(
-    columns: (auto, 1fr), column-gutter: 48pt, align: horizon,
-    pipeline-topdown(steps: (1, 2), cols: 1, k: 1.0),
-    stack(
-      spacing: 8pt,
-      card[Pairwise Reconstruction#super[1]][
-        - SIFT (Scale-Invariant Feature Transform) matching between image pairs
-        - Each pair: 5-point + RANSAC (Random Sample Consensus) + BA; drop if reprojection error > 0.6 px
-        - $C_(I J)$: invert reduced camera Hessian ($I$ fixed); weight $tr(C_(I J))$
-      ],
-      card(hl[Near-Duplicates#super[2]])[
-        - Camera centers almost coincide ($d_c < 0.025 d_p$) + overlap subset
-        - Removed (≈ 1/3 of Internet images), added back at the end
-      ],
-      card[Pair Graph $G_P$][
-        - Node = pair; edge if two pairs share ≥ 16 inlier points
-        - $A$–$B$, $B$–$C$ overlap but no common points → scale unknown
-      ],
-    ),
+  #pipeline-rows(
+    k: 1.3,
+    ((1,), h => card([Pairwise Reconstruction], height: h)[
+      - SIFT (Scale-Invariant Feature Transform) matching between image pairs
+      - Each pair: 5-point + RANSAC (Random Sample Consensus) + BA; drop if reprojection error > 0.6 px
+      - $C_(I J)$: invert reduced camera Hessian ($I$ fixed); weight $tr(C_(I J))$
+    ]),
+    ((2,), h => card([Near-Duplicates #pipeline-mark("duplicate")], height: h)[
+      - Camera centers almost coincide ($d_c < 0.025 d_p$) + overlap subset
+      - Removed (≈ 1/3 of Internet images), added back at the end
+    ]),
   )
 ]
 
-#slide[Pipeline: Skeletal Set & Reconstruction][
-  #grid(
-    columns: (auto, 1fr), column-gutter: 16pt, align: horizon,
-    pipeline-topdown(steps: (3, 4, 5, 6), cols: 2, k: 0.95),
-    stack(
-      spacing: 8pt,
-      card[Step 1: Max-Leaf Spanning Tree#super[3]][
-        - Prune edges with $"imp"(I, J) = d_f (I, J; G_I) \/ w_(I J) < 4 \/ t$
-        - Greedy: grow from node with most neighbors; feasible paths in $G_P$ only
-      ],
-      card([Step 2: #hl[Enforce Stretch $t$#super[4]]])[
-        - Check only neighboring pairs $(I, J)$
-        - Add edge if $d_f (I, J; G_S) > t dot d_f (I, J; G_I)$; interior edges first
-      ],
-      card[Reconstruction#super[5,6]][
-        - $S$ = non-leaf nodes of $G_S$: incremental SfM + BA
-        - Leaves and duplicates: #hl[pose estimation#super[6]]\; optional final BA
-      ],
-    ),
+#slide[Pipeline: Skeletal Set][
+  #pipeline-rows(
+    k: 1.3,
+    ((3,), h => card([Max-Leaf Spanning Tree], height: h)[
+      - Prune edges with $"imp"(I, J) = d_f (I, J; G_I) \/ w_(I J) < 4 \/ t$ #pipeline-mark("pair")
+      - Greedy: grow from node with most neighbors; feasible paths in #pipeline-mark("pair") only
+    ]),
+    ((4,), h => card([Enforce Stretch $t$ #pipeline-mark("added")], height: h)[
+      - Check only neighboring pairs $(I, J)$
+      - Add edge if $d_f (I, J; G_S) > t dot d_f (I, J; G_I)$ #pipeline-mark("pair")\; interior edges first
+    ]),
+  )
+]
+
+#slide[Pipeline: Reconstruction][
+  #pipeline-rows(
+    k: 1.3,
+    ((5,), h => card([Reconstruct $S$], height: h)[
+      - $S$ = non-leaf nodes of $G_S$: incremental SfM + BA
+    ]),
+    ((6,), h => card([Pose Estimation + BA], height: h)[
+      - Leaves and duplicates: pose estimation #pipeline-mark("registered")\; optional final BA
+    ]),
   )
 ]
 
@@ -131,7 +144,7 @@
     ],
   )
   #v(8pt)
-  #note[St. Peter's: median camera error 6–8 cm after BA for $t <= 30$ (≈ 10% of images in $S$).]
+  #note[St. Peter's: median camera error 6–8 cm after BA for $t <= 30$ (≈ 10% of images in $S$ at $t = 30$).]
 ]
 
 #slide[Author's View][
@@ -170,6 +183,8 @@
     h => stat([48–67%], [selected · IMC, $t = 16$], height: h),
     h => stat([39–50%], [added edges · no feasible path], height: h),
   )
+  #v(6pt)
+  #note[Numbers from our midterm report, using this method as the baseline.]
 ]
 
 #slide[Relevance to Project][
@@ -191,7 +206,6 @@
   #card([Takeaways for the Project])[
     - Main classical baseline in our comparison; already implemented with a web demo
     - Connectivity matters: diverse-only subsets break apart → disconnection penalty
-    - Next: fix edge weights, require $t > 4$, compare $t = 16$ vs. $64$ by COLMAP mAA
   ]
 ]
 

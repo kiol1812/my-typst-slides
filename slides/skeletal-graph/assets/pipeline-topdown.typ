@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes, equal-row
 
 // Top-down toy scene: a building at the origin, cameras as (angle in deg, radius).
 // The skeletal graph is computed below with the paper's steps (Sec. 3-4), so the
@@ -128,7 +128,7 @@
       let gone = g.dup.contains(a) or g.dup.contains(b)
       let st = if step == 1 { 0.6pt + p.text }
         else if step == 2 { if gone { dotted } else { 0.6pt + p.text } }
-        else if step == 4 and _has(g.added, e) { 1.8pt + p.accent }
+        else if step == 4 and _has(g.added, e) { 2.4pt + p.accent }
         else if _has(g.tree, e) { 1.2pt + p.text }
         else { dotted }
       line(pos(a), pos(b), stroke: st)
@@ -167,6 +167,30 @@
   }
 }
 
+// Inline glyph matching an accent mark in the panels, so text can act as a legend:
+// "duplicate" (step 2), "added" edge (step 4), "registered" camera (step 6),
+// and "pair" for steps that measure paths in G_P (a G_P node from pair-graph-fig).
+#let pipeline-mark(kind, palette: (:)) = {
+  let p = default-palette + palette
+  let glyph = if kind == "pair" {
+    box(inset: (x: 0.25em, y: 0.12em), radius: 0.2em, fill: p.primary.lighten(85%),
+      stroke: 0.9pt + p.primary, text(size: 0.85em, $G_P$))
+  } else if kind == "duplicate" {
+    box(width: 0.8em, height: 0.8em, {
+      place(center + horizon, circle(radius: 0.38em, stroke: 1.2pt + p.accent))
+      place(center + horizon, circle(radius: 0.16em, fill: p.accent))
+    })
+  } else if kind == "added" {
+    box(width: 1.2em, height: 0.8em, place(horizon, line(length: 100%, stroke: 2.4pt + p.accent)))
+  } else if kind == "registered" {
+    polygon(fill: p.accent.lighten(60%), stroke: 0.8pt + p.accent,
+      (0em, 0.4em), (0.8em, 0em), (0.8em, 0.8em))
+  } else {
+    panic("unknown pipeline-mark kind: " + kind)
+  }
+  box(baseline: 0.1em, glyph)
+}
+
 // steps: which panels (1-6) to draw, laid out in `cols` columns; k scales the scene.
 #let pipeline-topdown(steps: range(1, 7), cols: 3, k: 0.8, palette: (:), sizes: academic-sizes) = {
   let p = default-palette + palette
@@ -187,9 +211,27 @@
     let row-gap = 4.9 * k + 1.3
     for (j, step) in steps.enumerate() {
       let origin = (calc.rem(j, cols) * col-gap, -calc.floor(j / cols) * row-gap)
+      // Invisible slot of one column width centered on the scene, so panels of different
+      // caption widths keep their scene centers on the same vertical line.
+      line((origin.at(0) - col-gap / 2, origin.at(1)), (origin.at(0) + col-gap / 2, origin.at(1)), stroke: none)
       _panel(origin, k, p, g, step)
       content((origin.at(0), origin.at(1) - 2.7 * k), anchor: "north",
         text(weight: "bold", heads.at(step - 1)))
     }
   })
+}
+
+// Rows of (steps, h => card(..., height: h)[..]): cards on the left, panels on the right
+// sharing one column width, and each card stretches to its panel's height.
+// steps: none leaves the right side empty.
+#let pipeline-rows(k: 0.8, gutter: 24pt, spacing: 8pt, ..rows) = context {
+  let rows = rows.pos()
+  let panels = rows.map(((steps, _)) => if steps == none { none }
+    else { pipeline-topdown(steps: steps, cols: steps.len(), k: k) })
+  let w = calc.max(..panels.filter(it => it != none).map(it => measure(it).width))
+  stack(spacing: spacing, ..rows.zip(panels).map((((_, item), panel)) => equal-row(
+    columns: (1fr, auto), gutter: gutter,
+    item,
+    h => block(width: w, height: h, align(left + horizon, panel)),
+  )))
 }
