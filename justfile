@@ -9,7 +9,8 @@ watch slide:
       --diagnostic-format short \
       slides/{{slide}}/main.typ out/{{slide}}.pdf 2>&1 | grep -v -i "font"
 
-new name template="slide":
+# new slide from templates/<template>; no version: ask in a terminal, else the newest supported
+new name template="slide" version="":
     #!/usr/bin/env bash
     set -euo pipefail
     dir="slides/{{name}}"
@@ -22,11 +23,17 @@ new name template="slide":
         echo "✗ $dir 已存在，未做任何變更" >&2
         exit 1
     fi
+    tmp=$(mktemp)
+    trap 'rm -f "$tmp"' EXIT
+    theme=$(python3 scripts/template_versions.py render "{{template}}" "$tmp" {{ if version == "" { "" } else { quote(version) } }})
     mkdir -p "$dir"
-    cp "$tpl/main.typ" "$dir/main.typ"
+    mv "$tmp" "$dir/main.typ"
     sed "s/^date .*/date     = $(date +%F)/" "$tpl/meta.toml" > "$dir/meta.toml"
     : > "$dir/refs.bib"
-    echo "✓ 已建立 $dir（main.typ / meta.toml / refs.bib）"
+    echo "✓ 已建立 $dir（main.typ / meta.toml / refs.bib，$theme）"
+    if grep -q '// 提醒：' "$dir/main.typ"; then
+        echo "  寫完內容後刪除 main.typ 中以「// 提醒：」開頭的註解" >&2
+    fi
 
 fill name key="":
     python3 scripts/fill_slide_meta.py "slides/{{name}}" "{{key}}"
@@ -66,6 +73,10 @@ fig slide name:
       "$theme" "{{name}}" "{{name}}" \
       | typst compile --root . --package-path packages --font-path fonts \
           --diagnostic-format short - "out/{{slide}}--{{name}}.pdf"
+
+# versions each template accepts and the default `just new` picks (newest folder in the series)
+versions:
+    @python3 scripts/template_versions.py list
 
 # minimal standalone project (source, assets, used local packages, README) -> out/<slide>.zip
 export slide:

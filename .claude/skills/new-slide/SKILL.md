@@ -29,11 +29,14 @@ description: 用自然語言建立一份新的論文報告簡報：決定 slide 
 ## 2. 建立與填入
 
 ```bash
-just new <id>             # 一般論文報告（templates/slide，theme-academic:0.1.2）
-just new <id> compact     # 有頁數上限的課程報告（templates/compact，theme-academic:0.2.1）
+just new <id>                  # 一般論文報告（templates/slide）
+just new <id> compact          # 有頁數上限的課程報告（templates/compact）
+just new <id> compact 0.2.1    # 使用者指定主題版本時
 ```
 
-`compact` 模板不使用章節分隔頁（改用 `#section[...]`），`slide` 可帶 `source:` 在頁尾標來源，封面可填 `affiliations:`。課程作業有規範時（`docs/courses/`），依規範決定頁數與是否保留 Outline / References。
+不指定版本時，由 Claude 執行（非互動）會直接用該模板支援的最新版；可選版本用 `just versions` 查詢。輸出的「✓ 已建立 …（theme-academic:x.y.z）」就是寫入 slide 的版本，回報時一併告訴使用者。
+
+`compact` 模板不使用章節分隔頁（改用 `#section[...]`），`slide` 可帶 `source:` 在頁尾標來源，封面可填 `affiliations:`。課程作業有規範時（`docs/courses/`），依規範決定頁數與是否保留 Outline / References；已封存（已繳交或過期）的課程規範不適用，清單見 `CLAUDE.md`。
 
 把 BibTeX 寫入 `slides/<id>/refs.bib`（用 Write 工具），然後：
 
@@ -56,4 +59,4 @@ just fill <id> <bib-key>   # 多筆時指定要當作封面的條目
 just build <id>
 ```
 
-成功產生 `out/<id>.pdf`，且 `just check <id>` 沒有溢出頁才算完成。最後向使用者回報：slide id、填入的標題 / 作者 / venue / 年份 / 日期，以及仍需手動處理的項目（例如 summary 仍為 `TBD`）。不要自動 commit。
+成功產生 `out/<id>.pdf`，且 `just check <id>` 沒有溢出頁才算完成。最後向使用者回報：slide id、使用的主題版本、填入的標題 / 作者 / venue / 年份 / 日期，以及仍需手動處理的項目（例如 summary 仍為 `TBD`、內容寫完後要刪除的 `// 提醒：` 註解）。不要自動 commit。

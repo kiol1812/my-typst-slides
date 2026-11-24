@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": plot
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 #let _spike(x, h, w) = h * calc.exp(-w * calc.pow(x - 12, 2))
 #let _input(x) = 0.5 * calc.sin(2 * x) + 0.3 * calc.cos(5.5 * x) + _spike(x, 3.2, 4)
@@ -22,7 +22,7 @@
       import cetz.draw: *
       set-style(axes: (stroke: 0.8pt + p.muted, tick: (stroke: none)))
       plot.plot(
-        size: (11, 2.6),
+        size: (13, 3.4),
         axis-style: "left",
         x-tick-step: none,
         y-tick-step: none,

@@ -1,4 +1,4 @@
-#import "@local/theme-academic:0.1.0": *
+#import "@local/theme-academic:0.2.2": *
 #import "@preview/cetz:0.5.2"
 
 #import "assets/static-correlation.typ": static-correlation
@@ -8,36 +8,27 @@
 #import "assets/aagc.typ": aagc
 #import "assets/st-detector.typ": st-detector
 #import "assets/main-results.typ": main-results
-#import "assets/ablation.typ": ablation
 
 #let title-text = "Self-Perturbed Anomaly-Aware Graph Dynamics for Multivariate Time-Series Anomaly Detection"
 
-#show: deck.with(footer: title-text)
+#show: deck.with(footer: [SPAGD (Cai et al., NeurIPS 2025)])
 
-#let palette = default-palette + (:)
-
-#set figure(supplement: "Figure")
-#show table: set text(size: 16pt)
-#show footnote.entry: set text(size: 16pt)
-#show list: set block(above: 0.65em, below: 0.65em)
+#let eq(n, e) = math.equation(block: true, numbering: (..) => [(#n)], e.body)
 
 // ───────── 封面 ─────────
 #title-slide(
   title: title-text,
-  authors: [Jinyu Cai, Yuan Xie, Glynnis Lim, Yifang Yin, Roger Zimmermann, See-Kiong Ng],
-  venue: [NeurIPS],
-  year: [2025],
+  authors: [Jinyu Cai#super[1], Yuan Xie#super[2\*], Glynnis Lim#super[1], Yifang Yin#super[3], Roger Zimmermann#super[2], See-Kiong Ng#super[1]],
+  affiliations: [#super[1]Institute of Data Science, NUS #h(1em) #super[2]School of Computing, NUS #h(1em) #super[3]Institute for Infocomm Research, A\*STAR, Singapore #h(1em) #super[\*]Corresponding author],
+  venue: [NeurIPS 2025 (39th Conference on Neural Information Processing Systems)],
+  year: [],
   presenters: ([11557028 楊育哲]),
-  date: [2026/10/21],
+  date: [2026/11/25],
 )
 
-// ───────── Outline ─────────
-#outline-slide()
-
-#section-slide[Introduction]
+#section[Introduction]
 
 #slide[Problem Definition][
-  #show table.cell: set text(size: 20pt)
   - Time-series anomaly detection (TSAD)
     #table(
       columns: 2,
@@ -56,7 +47,7 @@
 ]
 
 #slide[Related Works][
-  #two-col(ratio: (1.7fr, 1fr))[
+  #two-col(ratio: (1fr, 1fr))[
     - Sequence-centric models
       - Good at capturing long-term dependencies
       - Overlook inter-variable correlations
@@ -96,7 +87,7 @@
   ]
 ]
 
-#section-slide[Methodology]
+#section[Methodology]
 
 #slide[Problem Formulation][
   - *Input Data:* Time series $bold(X)$ with $T$ steps and $d$ features
@@ -119,79 +110,81 @@
 
 #slide[Key Idea][
   #grid(
-    columns: (auto, 1fr),
+    columns: (1.4fr, 1fr),
     column-gutter: 20pt,
     align: horizon,
-    pseudo-boundary(),
+    stack(
+      dir: ttb,
+      spacing: 12pt,
+      pseudo-boundary(),
+      callout(title: [Open questions], kind: "warn")[
+        *Shortcut?* The classifier may learn reconstruction artifacts (e.g., smoothness) \
+        *Alignment?* Errors reflect model capacity, not real anomaly types
+      ],
+    ),
     stack(
       dir: ttb,
       spacing: 12pt,
       card([Why it works])[
-        #set text(size: 18pt)
         Separating $bold(X)$ from $tilde(bold(X))$ $->$ boundary hugs normal data \
         No pre-training: pseudo-anomalies go *easy $->$ hard*
       ],
       card([Why not random noise?], color: palette.surface)[
-        #set text(size: 18pt)
         AE errors are *structured*: inter-sensor relations, subtle temporal changes
       ],
     ),
   )
-  #v(10pt)
-  #callout(title: [Open questions], kind: "warn")[
-    #set text(size: 18pt)
-    *Shortcut?* The classifier may learn reconstruction artifacts (e.g., smoothness) \
-    *Alignment?* Errors reflect model capacity, not real anomaly types
-  ]
 ]
 
 #slide[Self-Perturbed Anomaly-Aware Graph Dynamics][
   #figure(
     image("assets/fig-1.png", width: 80%),
-    caption: [An illustration of the proposed SPAGD framework (Source: Jinyu Cai et al. 2025 @cai2025)]
+    caption: [An illustration of the proposed SPAGD framework (Source: Jinyu Cai et al. 2025)]
   )
 ]
 
 #slide(subtitle: [Problem 1: data imbalance])[Self-Perturbation][
-  - Transformer AE on normal data; output $tilde(bold(X))$ labeled as anomaly
-  - Deviations shrink during training: *obvious $->$ subtle*
-  #align(center, grid(
-    columns: 2,
+  - *Reconstruction* (eq 1): Transformer AE on normal data; output $tilde(bold(X))$ labeled as anomaly
+  - *Objective* (eq 2): deviations shrink during training: *obvious $->$ subtle*
+  #grid(
+    columns: (1fr, auto),
     column-gutter: 24pt,
     align: horizon,
-    $display(cal(L)_"sp" = sum^N_(i=1) || bold(X)_i - "Tran"_d ("Tran"_e (bold(X)_i; Theta_e); Theta_d) ||^2_F)$,
-    text(size: 16pt, fill: gray-text)[Frobenius norm: \ $||A||^2_F = sum_i sum_j |a_(i j)|^2 = "Tr"(A^T A)$],
-  ))
+    [
+      #eq(1, $ tilde(bold(X)) = "Tran"_d ("Tran"_e (bold(X); Theta_e); Theta_d) $)
+      #eq(2, $ cal(L)_"sp" = sum^N_(i=1) || bold(X)_i - "Tran"_d ("Tran"_e (bold(X)_i; Theta_e); Theta_d) ||^2_F $)
+    ],
+    note(size: academic-sizes.label)[Frobenius norm: \ $||A||^2_F = sum_i sum_j |a_(i j)|^2 = "Tr"(A^T A)$],
+  )
   #align(center, self-perturbation())
 ]
 
 #slide(subtitle: [Problem 2: static correlations])[Anomaly-Aware Graph Construction][
   #align(center, aagc())
-  #set text(size: 22pt)
-  - Residual per variable: $r_i = 1/T sum_t |X_(i,t) - tilde(X)_(i,t)|$
-  - Top-$m%$ $->$ candidates $cal(M)$
-  - Boost edges touching $cal(M)$, then keep top-$K$:
-  $
-    tilde(S)_(i j) = S_(i j) + bb(I)(i in cal(M)) phi(r_i) + bb(I)(j in cal(M)) phi(r_j), quad phi := "Sigmoid"
-  $
+  - *Initial graph*: Sigmoid(cosine similarity), keep top-$K$ neighbors
+  - *Dynamic adjustment* (eq 5, 6): top-$m%$ residual $r_i$ $->$ candidates $cal(M)$; \ boost edges touching $cal(M)$, then keep top-$K$
+  #grid(
+    columns: (1fr, 2.2fr),
+    column-gutter: 24pt,
+    align: horizon,
+    eq(5, $ r_i = 1/T sum^T_(t=1) |X_(i,t) - tilde(X)_(i,t)| $),
+    eq(6, $ tilde(S)_(i j) = S_(i j) + bb(I)(i in cal(M)) phi(r_i) + bb(I)(j in cal(M)) phi(r_j), quad phi := "Sigmoid" $),
+  )
 ]
 
 #slide(subtitle: [Problem 3: anomaly reconstruction])[Spatio-Temporal Anomaly Detector][
   #align(center, st-detector())
-  #v(8pt)
   - *Spatial*: Graph Attention Network (GAT) on $bold(A)$ (normal) and $tilde(bold(A))$ (perturbed)
   - *Temporal*: $C$ time chunks $->$ Temporal Convolutional Network (TCN)
-  - *Classifier*: $hat(p) = cal(P)(cal(Z)_"stack"; Theta_cal(P)), quad hat(p) in [0, 1]^(2N)$
-    $
-      quad quad cal(L)_"ad" = -1/(2N) sum^(2N)_(i=1) [y_i log(hat(p)_i) + (1-y_i)log(1-hat(p)_i)]; quad cal(L) = cal(L)_"sp" + beta cal(L)_"ad"
-    $
+  - *Classifier* (eq 11 \~ 13): normal $y = 0$, perturbed $y = 1$
+  #eq(11, $ hat(p) = cal(P)(cal(Z)_"stack"; Theta_cal(P)) $)
+  #eq(12, $ cal(L)_"ad" = -1/(2N) sum^(2N)_(i=1) [y_i log(hat(p)_i) + (1-y_i)log(1-hat(p)_i)] $)
+  #eq(13, $ cal(L) = cal(L)_"sp" + beta cal(L)_"ad" $)
 ]
 
-#section-slide[Experiments]
+#section[Experiments]
 
 #slide[Setup][
-  #show table.cell: set text(size: 20pt)
-  #set figure(supplement: "Table")
   #figure(
     kind: table,
     table(
@@ -202,7 +195,7 @@
       [Soil Moisture Active Passive (SMAP)], [Spacecraft telemetry], [25], [135,183], [427,617], [13.13%],
       [Mars Science Laboratory (MSL)], [Spacecraft telemetry], [55], [58,317], [73,729], [10.72%],
     ),
-    caption: [Statistics of the three time-series datasets (Source: Jinyu Cai et al. 2025 @cai2025)]
+    caption: [Statistics of the three time-series datasets (Source: Jinyu Cai et al. 2025)]
   )
   - 16 baselines; AUC, AUPRC#footnote[Area Under the ROC Curve (AUC), Area Under the Precision-Recall Curve (AUPRC)], F1 *without* point adjustment
 ]
@@ -210,54 +203,31 @@
 #slide[Main Results][
   #figure(
     main-results(),
-    caption: [AUC, AUPRC, and F1 in % (Source: Table 2 of Jinyu Cai et al. 2025 @cai2025)],
+    caption: [AUC, AUPRC, and F1 in % (Source: Table 2 of Jinyu Cai et al. 2025)],
   )
-]
-
-#slide[Ablation Study][
-  #two-col(ratio: (1.2fr, 1fr))[
-    #figure(
-      ablation(),
-      caption: [Avg. of AUC / AUPRC / F1 (Source: Table 3 of Jinyu Cai et al. 2025 @cai2025)],
-    )
-  ][
-    #v(20pt)
-    - Every module helps
-    - No joint training: $-11.6$
-    - Recon. score: $-11.5$
-    - Static graph: $-6.3$ to $-6.8$
-  ]
-]
-
-#slide[Parameter Analysis][
-  #figure(
-    image("assets/fig-2.png", width: 92%),
-    caption: [Sensitivity to window size and $beta$ on SWaT (Source: Jinyu Cai et al. 2025 @cai2025)],
-  )
-  #v(8pt)
-  - *Window size*: best at 80--100; too short or too long both hurt
-  - *$beta$*: sharp drop at $10^(-4)$; peak at $10^(-2)$, stable beyond
 ]
 
 #slide[Anomaly Score Visualization][
   #figure(
     image("assets/fig-3.png", width: 100%),
-    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: Jinyu Cai et al. 2025 @cai2025)],
+    caption: [Anomaly scores on MSL; red = ground-truth anomaly (Source: Jinyu Cai et al. 2025)],
   )
   #v(8pt)
   - TranAD: low scores *inside* the anomaly $->$ anomaly reconstruction
   - SPAGD: score shift aligns with the ground truth
 ]
 
-#section-slide[Conclusion]
+#section[Conclusion]
 
 #slide[Paper Summary][
-  #grid(
+  #equal-row(
     columns: (1fr, 1fr, 1fr),
-    column-gutter: 12pt,
-    mini("1", [Self-Perturbation])[Pseudo-anomalies from reconstruction errors],
-    mini("2", [AAGC])[Residual-guided dynamic graph],
-    mini("3", [ST Classifier])[Avoids anomaly reconstruction],
+    gutter: 12pt,
+    ..(
+      ("1", [Self-Perturbation], [Pseudo-anomalies from reconstruction errors]),
+      ("2", [AAGC], [Residual-guided dynamic graph]),
+      ("3", [ST Classifier], [Avoids anomaly reconstruction]),
+    ).map(((k, name, body)) => h => { set block(height: h); mini(k, name, body) }),
   )
   #v(12pt)
   - Best AUC on SWaT, SMAP, MSL; each module verified by ablation
@@ -277,14 +247,9 @@
     - Synchronized, same sampling rate, strongly correlated
   - *Missing details*: appendix not found
     - Score visualization: score rises before the anomaly onset $->$ window misaligned?
+  - *Why this paper & Overlap with My research*
+    - Interest in *graph neural networks* and *representation learning*
+    - Curious about *dynamic graphs* since a lab meeting
 ]
 
-#slide[Why This Paper & Overlap with My Research][
-  - Interest in *graph neural networks* and *representation learning*
-  - Curious about *dynamic graphs* since a lab meeting
-]
-
-#slide()[References][
-  #set text(lang: "en")
-  #bibliography("refs.bib")
-]
+// #include "appendix.typ"

@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": plot
-#import "@local/theme-academic:0.1.0": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Smooth 0 -> 1 -> 0 window over the anomaly segment [11, 16].
 #let _window(x) = 1 / (1 + calc.exp(-4 * (x - 11))) - 1 / (1 + calc.exp(-4 * (x - 16)))
@@ -36,7 +36,7 @@
         import cetz.draw: *
         set-style(axes: (stroke: 0.8pt + p.muted, tick: (stroke: none)))
         plot.plot(
-          size: (9, 2.6),
+          size: (11, 3.4),
           axis-style: "left",
           x-tick-step: none,
           y-tick-step: none,

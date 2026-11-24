@@ -1,0 +1,6 @@
+title    = "Skeletal Graphs for Efficient Structure from Motion"
+date     = 2026-11-23
+tags     = ["paper"]
+template = "theme-academic"
+status   = "published"
+summary  = "Skeletal Graphs reconstruct a small skeletal subset bounded by a t-spanner, then register the remaining photos by pose estimation."
