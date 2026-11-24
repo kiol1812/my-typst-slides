@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": chart
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Average of AUC / AUPRC / F1 over three datasets, from Table 3 of the paper.
 #let _rows = (

@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Example values follow Eq. (3)-(6) with K = 2, m = 40%, phi = Sigmoid,
 // and self-loops excluded from top-K (GAT adds them via N(i) ∪ {i}).
@@ -27,7 +27,7 @@
 #let _slot = (0, 2, 3, 1, 4)
 #let _pos(origin, i) = {
   let a = 90deg - _slot.at(i) * 72deg
-  (origin.at(0) + 1.3 + 1.2 * calc.cos(a), origin.at(1) + 1.2 + 1.2 * calc.sin(a))
+  (origin.at(0) + 1.6 + 1.45 * calc.cos(a), origin.at(1) + 1.4 + 1.45 * calc.sin(a))
 }
 
 #let _edges(X) = {
@@ -57,7 +57,7 @@
     let hot = adjusted and i in _candidates
     circle(
       _pos(origin, i),
-      radius: 0.28,
+      radius: 0.32,
       fill: if hot { p.accent } else { p.primary.lighten(85%) },
       stroke: 1.2pt + if hot { p.accent } else { p.primary },
     )
@@ -74,7 +74,7 @@
 #let _matrix(origin, X, p, sizes) = {
   import cetz.draw: *
   let (x0, y0) = origin
-  let (w, h) = (1.1, 0.55)
+  let (w, h) = (1.3, 0.65)
   let n = X.len()
   for j in range(n) {
     content((x0 + (j + 0.5) * w, y0 + 0.35), text(size: sizes.small, fill: p.muted)[#(j + 1)])
@@ -100,37 +100,37 @@
     import cetz.draw: *
     let title(pos, body) = content(pos, text(size: sizes.label, weight: "bold", fill: p.text, body))
     let note(pos, body) = content(pos, text(fill: p.muted, body))
-    let arrow(x) = line((x, 1.2), (x + 0.8, 1.2), stroke: 1.2pt + p.text, mark: (end: "stealth", fill: p.text))
+    let arrow(x) = line((x, 1.4), (x + 0.8, 1.4), stroke: 1.2pt + p.text, mark: (end: "stealth", fill: p.text))
 
     // 1. static graph from normal data
-    title((4.5, 3.4), [Static graph $bold(A)$])
+    title((5.4, 4.0), [Static graph $bold(A)$])
     _graph((0, 0), _A, p, sizes)
-    _matrix((3.6, 2.6), _A, p, sizes)
-    note((4.5, -0.95), [Sigmoid(cosine), top-$K$ ($K = 2$)])
+    _matrix((4.3, 3.0), _A, p, sizes)
+    note((5.4, -1.0), [Sigmoid(cosine), top-$K$ ($K = 2$)])
 
-    arrow(9.5)
+    arrow(11.2)
 
     // 2. residuals sorted in descending order; the first m% are candidates
-    title((12.5, 3.4), [Sorted residual $r_i$])
+    title((14.45, 4.0), [Sorted residual $r_i$])
     let order = range(_residuals.len()).sorted(key: i => -_residuals.at(i))
-    let bar-w = 0.6
+    let bar-w = 0.7
     for (k, i) in order.enumerate() {
-      let x = 10.7 + k * 0.75
+      let x = 12.4 + k * 0.85
       let hot = i in _candidates
-      rect((x, 0), (x + bar-w, _residuals.at(i) * 2.4), fill: if hot { p.accent } else { p.primary.lighten(60%) }, stroke: none)
+      rect((x, 0), (x + bar-w, _residuals.at(i) * 2.8), fill: if hot { p.accent } else { p.primary.lighten(60%) }, stroke: none)
       content((x + bar-w / 2, -0.3), [#(i + 1)])
     }
-    let cut = 10.7 + _candidates.len() * 0.75 - 0.075
-    line((cut, -0.1), (cut, 2.8), stroke: (paint: p.text, thickness: 1pt, dash: "dashed"))
-    content((cut - 0.1, 2.6), anchor: "east", text(fill: p.accent)[top-$m%$])
-    note((12.5, -0.95), [$cal(M) = {3, 5}$ ($m = 40%$)])
+    let cut = 12.4 + _candidates.len() * 0.85 - 0.075
+    line((cut, -0.1), (cut, 3.2), stroke: (paint: p.text, thickness: 1pt, dash: "dashed"))
+    content((cut - 0.1, 3.0), anchor: "east", text(fill: p.accent)[top-$m%$])
+    note((14.45, -1.0), [$cal(M) = {3, 5}$ ($m = 40%$)])
 
-    arrow(14.8)
+    arrow(16.9)
 
     // 3. adjusted graph after boosting edges that touch candidates
-    title((20.5, 3.4), [Adjusted graph $tilde(bold(A))$])
-    _graph((16, 0), _A-adj, p, sizes, adjusted: true)
-    _matrix((19.6, 2.6), _A-adj, p, sizes)
-    note((20.5, -0.95), [$tilde(S)$ boosted, top-$K$ again])
+    title((23.5, 4.0), [Adjusted graph $tilde(bold(A))$])
+    _graph((18.1, 0), _A-adj, p, sizes, adjusted: true)
+    _matrix((22.4, 3.0), _A-adj, p, sizes)
+    note((23.5, -1.0), [$tilde(S)$ boosted, top-$K$ again])
   })
 }

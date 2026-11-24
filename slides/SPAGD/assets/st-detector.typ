@@ -1,5 +1,5 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 #let st-detector(palette: (:), sizes: academic-sizes) = {
   let p = default-palette + palette
@@ -7,7 +7,7 @@
   let module = (fill: p.surface.lighten(85%), stroke: 1.2pt + p.surface)
   set text(size: sizes.label)
   diagram(
-    spacing: (14mm, 9mm),
+    spacing: (18mm, 12mm),
     node-stroke: 1.2pt + p.primary,
     node-fill: p.primary.lighten(88%),
     node-corner-radius: 4pt,

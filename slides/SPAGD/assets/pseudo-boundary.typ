@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Normal data lives in a rotated ellipse; rho = 1 is its edge.
 #let _shape = (a: 1.5, b: 0.85, rot: 20deg)

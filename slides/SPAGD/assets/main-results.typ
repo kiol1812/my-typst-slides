@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": plot
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Values (%) from Table 2 of the paper. COPOD is kept because it has the best F1 on MSL.
 #let _methods = ([GDN], [TranAD], [USAD], [COPOD], [Deep IF], [COUTA], [*SPAGD*])

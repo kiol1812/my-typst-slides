@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4": plot
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 #let _signal(x) = 0.6 * calc.sin(1.3 * x) + 0.3 * calc.sin(3.1 * x)
 
@@ -20,7 +20,7 @@
         axes: (stroke: 0.8pt + p.muted, tick: (stroke: none)),
       )
       plot.plot(
-        size: (10, 2.6),
+        size: (12, 3.0),
         axis-style: "left",
         x-tick-step: none,
         y-tick-step: none,
@@ -51,7 +51,7 @@
       dir: ttb,
       spacing: 4pt,
       text(size: sizes.small, fill: p.muted)[training],
-      text(size: sizes.title, fill: p.muted, sym.arrow.r.long),
+      text(size: sizes.body, fill: p.muted, sym.arrow.r.long),
       text(size: sizes.small, fill: p.muted)[$cal(L)_"sp" arrow.b$],
     ),
     _panel([Late training], 0.3, p, sizes),
