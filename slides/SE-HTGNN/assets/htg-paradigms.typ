@@ -1,12 +1,12 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Two families of HTG models: (a) merge all snapshots into one graph before a
 // heterogeneous GNN; (b) spatial GNN per snapshot, then a temporal module.
 #let htg-paradigms(palette: (:), sizes: academic-sizes) = {
   let p = default-palette + palette
   set text(size: sizes.label)
-  cetz.canvas({
+  cetz.canvas(length: 1.3cm, {
     import cetz.draw: *
     set-style(stroke: 1.2pt + p.text)
     let arrow = (mark: (end: "stealth", fill: p.text))

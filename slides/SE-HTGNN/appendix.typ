@@ -1,4 +1,4 @@
-#import "@local/theme-academic:0.2.1": slide, appendix, two-col, equal-row, stat, palette
+#import "@local/theme-academic:0.2.2": slide, appendix, two-col, equal-row, stat, palette
 
 #appendix()
 
@@ -33,7 +33,6 @@
 ]
 
 #slide[Efficiency][
-  #show table.cell: set text(size: 14pt)
   #two-col(ratio: (1fr, 1.4fr))[
     #figure(
       kind: table,

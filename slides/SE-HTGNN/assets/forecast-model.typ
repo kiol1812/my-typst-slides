@@ -1,12 +1,12 @@
 #import "@preview/cetz:0.5.2"
-#import "@local/theme-academic:0.2.1": default-palette, academic-sizes
+#import "@local/theme-academic:0.2.2": default-palette, academic-sizes
 
 // Forecasting model F: gamma snapshots in, beta predictions out.
 // detail: true opens F up into SE-HTGNN's modules and highlights the linear project.
 #let forecast-model(detail: false, palette: (:), sizes: academic-sizes) = {
   let p = default-palette + palette
   set text(size: sizes.label)
-  cetz.canvas(length: if detail { 1.15cm } else { 1.2cm }, {
+  cetz.canvas(length: if detail { 1.15cm } else { 1.4cm }, {
     import cetz.draw: *
     set-style(stroke: 1.2pt + p.text)
     let arrow = (mark: (end: "stealth", fill: p.text))

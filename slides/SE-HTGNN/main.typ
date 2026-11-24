@@ -1,11 +1,11 @@
-#import "@local/theme-academic:0.2.1": *
+#import "@local/theme-academic:0.2.2": *
 #import "@preview/cetz:0.5.2"
 #import "assets/forecast-model.typ": forecast-model
 #import "assets/htg-paradigms.typ": htg-paradigms
 
 #let title-text = "Simple and Efficient Heterogeneous Temporal Graph Neural Network"
 
-#show: deck.with(footer: [SE-HTGNN (Wang et al., NeurIPS 2025)])
+#show: deck.with(footer: [SE-HTGNN (Wang et al., NeurIPS 2025)], table-size: academic-sizes.label)
 
 #show math.equation.where(block: true): set block(above: 0.7em, below: 0.7em)
 #let eq(n, e) = math.equation(block: true, numbering: (..) => [(#n)], e.body)
@@ -25,14 +25,13 @@
 
 #slide[Problem Definition][
   #figure(
-    image("assets/HDGNN.png", width: 73%),
+    image("assets/HDGNN.png", width: 76%),
     caption: [(a) Heterogeneous Temporal Graph (HTG): diverse node type and relation; \ (b) general HDGNN framework: representation learning on HTGs (Source: Wang et al. 2025)]
   )
 ]
 
 #slide[Related Works][
   #{
-    show table: set text(size: 20pt)
     table(
       columns: (auto, 1fr, 1fr),
       align: (x, y) => if y==0 { center } else { left },
@@ -58,16 +57,15 @@
 
 #slide[SE-HTGNN Overview][
   #figure(
-    image("assets/SE-HTGNN.png", width: 88%),
+    image("assets/SE-HTGNN.png", width: 95%),
     caption: [SE-HTGNN architecture overview (Source: Wang et al. 2025)]
   )
 ]
 
 #slide(subtitle: [Problem: uninformed initial attention])[LLM-enhanced Prompt][
-  - *Emebedding* (eq 9, 10): $H^"LLM" = union^(cal(T)_n)_v H^"LLM"_v$
+  - *Embedding* (eq 9, 10): $H^"LLM" = union^(cal(T)_n)_v H^"LLM"_v$
   - *Initial attention coefficient* (eq 11, 12)
-  #two-col(ratio: (1fr, 1fr))[
-    #set text(size: 21pt)
+  #two-col(ratio: (1fr, 1.1fr))[
     #eq(9, $ "Prompt"(v) = \ "{Introduction to type " v "; instruction.}" $)
     #eq(10, $ H_v^"LLM" = "LLM"("Prompt"(v)), forall v in cal(T)_n $)
     #eq(11, $ Q_u = W_Q H_u^"LLM", K_v = H_v^"LLM", \ beta_r = Q_u K_v^top $)
@@ -88,7 +86,6 @@
     columns: (0.6fr, 1fr),
     column-gutter: 16pt,
     [
-      #set text(size: 21pt)
       #eq(4, $ H_v^t = W_v dot X_v^t + b_v $)
       #eq(5, $ H_(v,r)^t = sigma (A_r^t H^t_(cal(N)^t_r (v))) $)
       #eq(6, $ e^t_(v,r) = "GRU"_r (H^t_(v,r), e^(t-1)_(v,r)) $)
@@ -97,7 +94,7 @@
     ],
     [
       #figure(
-        image("assets/SE-HTGNN-c.png", width: 90%),
+        image("assets/SE-HTGNN-c.png", width: 100%),
         caption: [Dynamic-attention-based graph learning (Source: Wang et al. 2025)]
       )
     ]
@@ -106,9 +103,7 @@
 
 #slide(subtitle: [Problem: extra temporal module])[Linear Project][
   #align(center, forecast-model(detail: true))
-  #set text(size: 18pt)
   #set par(leading: 0.5em)
-  #show math.equation.where(block: true): set text(size: 21pt)
   #show math.equation.where(block: true): set block(above: 0pt, below: 0pt)
   #show math.equation.where(block: true): set align(left)
   #let muted(body) = text(fill: palette.muted, body)
